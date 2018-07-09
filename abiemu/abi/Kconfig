@@ -1,0 +1,166 @@
+#
+# Linux-ABI configuration
+#
+
+# this file gets source'ed into the kernel file formats menu entry
+# via ./fs/Kconfig.binfmt
+
+config ABI
+        bool "Extended Linux-ABI support (alien binarys and syscalls)"
+	depends on X86=y
+        default n
+        help
+          Support for a few alien syscall interfaces. This allows you to run
+          a binary that got build for other Unix compatible platforms.
+
+
+config ABI_SVR4
+        tristate "SVR3/SVR4 family syscall support for x86 binarys"
+	depends on X86=y
+        depends on ABI
+        default n
+
+
+comment "SVR3/SVR4 based syscall support for x86: (please check one or more)"
+        depends on ABI_SVR4
+
+config ABI_IBCS
+        tristate "iBCS2/iABI4 syscall support"
+        depends on ABI_SVR4
+
+config ABI_ISC
+        tristate "ISC syscall support"
+        depends on ABI_SVR4
+
+config ABI_SCO
+        tristate "SCO OpenServer 5/SCO Unix 3.x/Xenix syscall support"
+        depends on ABI_SVR4
+
+config ABI_SOLARIS
+        tristate "Solaris 2.x syscall support"
+        depends on ABI_SVR4
+
+config ABI_UW7
+        tristate "UnixWare 7.x syscall support"
+        depends on ABI_SVR4
+
+config ABI_WYSE
+        tristate "Wyse V/386 syscall support"
+        depends on ABI_SVR4
+
+
+comment "SVR3/SVR4 related binary format support for x86:"
+        depends on ABI_SVR4
+
+config BINFMT_COFF
+        tristate "COFF binary support (SVR3)"
+        depends on ABI_SVR4
+
+config BINFMT_XOUT
+        tristate "x.out binary support (Xenix)"
+        depends on ABI_SVR4
+
+config BINFMT_XOUT_X286
+        bool "x.out segmented binary support (Xenix/80286)"
+        depends on BINFMT_XOUT
+
+
+config ABI_LATE_PROBING
+        bool
+        prompt "Late probing of personality trough syscall handler"
+        depends on ABI
+        default y
+        help
+          There is a minor general uncertainty on identification of binary
+          formats. It might happen that  statically linked SVr4 binary could
+          be falsely assigned to a Linux personality. Solaris/x86 binarys
+          are another sample for a falsely assigned Linux personality.
+          If this option is set the lcall handler for Linux will switch
+          to SVr4 personality as soon as lcall 0x07 is used, or it will
+          switch to Solaris personality when lcall 0x27 is used.
+          Since this on-the-fly personality switching is a one way path
+          a malicious program might make use of exactly that ability.
+          For system consistency reasons personality detection should go
+          that way. The better solution is to improve the personality
+          detection code at load time in contrast to runtime detection.
+          At present load time probing is not perfect, so better say yes.
+
+config ABI_TRACE
+        bool
+        prompt "Include prints for syscall tracking via ABI_TRACE ioctl"
+        depends on ABI
+        default y
+        help
+          This option allows to control the inclusion of code that prints
+          kernel messages for tracking special syscalls events like errors.
+          Typically this messages further have to be enabled via the
+          ABI_TRACE ioctl. This option will not remove the ioctl interface
+          but will only remove the backend coding which produces the prints.
+          You can disable thise option if you want to reduce the kernel size
+          or have other concerns, e.g. code size or possible message floods.
+
+# --- internal options, values will get derived from prior settings ---
+
+# the abi-util (./abi/util) codebase
+# does currently only contain code for the ABI_TRACE coding
+# and has to be present as soon as the SVR4 code is present.
+config ABI_UTIL
+        tristate
+        depends on ABI_TRACE
+        default y if ABI_SVR4=y
+        default m if ABI_SVR4=m
+        default n
+
+config ABI_SPX
+        bool
+        depends on ABI!=n
+        default y
+
+config ABI_XTI
+        bool
+        depends on ABI!=n
+        default y
+
+config ABI_TLI_OPTMGMT
+        bool
+        depends on ABI!=n
+        default y
+
+config ABI_XTI_OPTMGMT
+        bool
+        depends on ABI!=n
+        default n
+
+# there are syscall interfaces which do get statically linked
+config ABI_SYSCALL_STATICS
+        bool
+        default y if ABI_UW7=y || ABI_SOLARIS=y || ABI_IBCS=y || ABI_ISC=y || ABI_SCO=y || ABI_WYSE=y
+        default n
+
+# there are syscall interfaces which do get build as module
+config ABI_SYSCALL_MODULES
+        bool
+        default y if ABI_UW7=m || ABI_SOLARIS=m || ABI_IBCS=m || ABI_ISC=m || ABI_SCO=m || ABI_WYSE=m
+        default n
+
+# the LCALL7 code for SVR4 family support must _not_ be a module
+# when there is at least a single, statically bound syscall driver.
+# if there are only modules, then the LCALL code can be a module as well.
+# if there is no module at all then we dont need the LCALL7 code.
+config ABI_LCALL7
+        tristate
+        default y if ABI_SYSCALL_STATICS=y
+        default m if ABI_SYSCALL_MODULES=y
+        default n
+
+# notes:
+# * only a static SVR4 core coding will allow static syscall drivers,
+# * setting a syscall driver to modules will be the only way to allow
+#   this single module to plug into SVR4 core coding.
+# * there is no generic "register my entrypoints" request for modules
+#   in the curent codebase. (this might be a TODO)
+# * the exported LCALL7 syms will only be usefull to syscall driver modules.
+# * LCALL7 is only usefull if there are syscall drivers (static or module).
+# * an "empty" SVR4 might be usefull for debugging and non-x86 targets.
+
+### EOF ###

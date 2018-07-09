@@ -1,0 +1,12 @@
+ * lnxstamp
+
+	Usage: lnxstamp file ...
+
+	This program scans the list of files specified on the command
+line and for all those that appear to be executable but have a machine
+type of 0 it changes the machine type to 100. Old (very old) Linux
+linkers left the machine type as 0 and there are still old binaries
+around (use the magic file in this directory and 'file' your /bin and
+/usr/bin directories). The i386 BSD flavours use 0 as the machine type
+so if we update our old Linux binaries we can tell the difference. This
+is essential if you want to have BSD emulation.

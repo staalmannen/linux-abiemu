@@ -1,0 +1,79 @@
+A (non-definitive) list of people who appear to have worked on the
+emulator and, in some cases, what they appear to have done.
+
+This list is in no particular order.
+
+This list should probably be better maintained :-).
+
+If anyone feels that they are not properly credited here, send diffs to
+this file.
+
+
+========================================================================
+
+Brandon S. Allbery <bsa@kf8nh.wariat.org> or <kf8nh@kf8nh.ampr.org>
+
+Graham Adams <gadams@ddrive.demon.co.uk>
+
+Tor Arntsen <tor@tss.no> or <tor@spacetec.no>
+	Emulator as of pl13
+
+Philip Balister <balister@vt.edu>
+	Emulator as of pl13
+	gdb for coff
+
+Alfred Longyear <longyear@netcom.com>
+	COFF loader
+	Emulator as of pl12
+	Original author of libc_s. COFF version.
+
+Mike Jagdis <jaggy@purplet.demon.co.uk>
+	Changes for loadable module version of the emulator.
+	Multi-personality detection and syscall mapping.
+	Error code mapping.
+	Wyse V/386 socket interface.
+	/dev/socksys socket interface.
+	/dev/spx to Unix domain socket for local X connections.
+	Named pipe to Unix domain socket open kludge.
+	XTI/TLI STREAMS based networking interface.
+	X.out loader for 386 Xenix binaries.
+	BSD support.
+	Trace dummy device.
+	Segment (LDT) mapping for x.out binaries.
+	Xenix 286 emulator overlay.
+	Current source maintainer and primary developer.
+
+Joseph L. Portman III <baron@hebron.connected.com>
+	Major emulator developer.
+	libc_s
+
+Drew Sullivan <drew@lethe.north.net>
+	Past emulator source maintainer.
+
+Eric Youngdale <eric@aib.com> (prev. <eric@cais.com> & <ericy@gnu.ai.mit.edu>)
+	First cut of the emulator.
+	ELF loader, plus memory manager and fs/exec.c modifications
+		to allow multiple binary formats to be loaded.
+	Keeper of the tsx-11 archive.
+	libc_s (elf version), plus bugfixes, reorganization, etc.
+	SVr4 portions of emulator.
+
+Karl Kiniger <ki@kretz.co.at>
+	Interactive 4.0 binary recognition and special support.
+
+Remete Gabor <rg@tomx.elte.hu>
+	Miscellaneous patches.
+
+Scott Michel <scottm@intime.com>
+	SCO multiscreen ioctls.
+
+Stephan Riess <Stephan.Riess@Physik.TU-Muenchen.de>
+	SCO tape ioctls.
+
+Peter Polte <peter@cat-productions.de>
+	Xenix fcntl() file locking facilities.
+
+C.A. Lademann <cal@zls.com>
+
+Miguel de Icaza <miguel@roxanne.nuclecu.unam.mx>
+	Sparc support.

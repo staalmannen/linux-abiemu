@@ -1,0 +1,49 @@
+Autoloading personality modules under Linux-ABI
+2001-July-19
+Christoph Hellwig, <hch@caldera.de>
+
+Linux-ABI can automatically load binary format modules (see modules.txt
+for information on what binary format modules are).  This file explains
+how to setup a system to automatically load the binary format modules
+on demand.
+
+Automatic module loading is done in Linux using a facility called 'kmod'
+which is - unlike the name suggests - _not_ a system daemon, but a kernel-
+facility to make userspace upcalls to te module loading program 'modprobe'.
+
+Linux-ABI uses the function request_module that is exported by kmod to
+request modules for personalities that are currently not available but
+requested by one of the binary fomrat detection heuristics.  For a missing
+personality, request_module is called for the module-string
+
+	personality-<personality-number>
+
+To get the right modules loaded you have to alias these string to the
+actually wanted modules in /etc/modules.conf.  To do that you have to know
+which personality number maps to what module.  Here is a table for the
+personalities supported by Linux-ABI:
+
+
+	  personalities		module
+	-----------------------------------
+	  1,2,5,7		abi-ibcs
+	  3			abi-sco
+	  4			abi-wyse
+	  13			abi-solaris
+	  14			abi-uw7
+
+Below is an example snipplet from modules.conf for such a setup:
+
+------------------- snip --------------------
+
+alias personality-1	abi-ibcs
+alias personality-2	abi-ibcs
+alias personality-3	abi-sco
+alias personality-4	abi-wyse
+alias personality-5	abi-ibcs
+alias personality-7	abi-ibcs
+alias personality-13	abi-solaris
+alias personality-14	abi-uw7
+
+------------------- snip --------------------
+

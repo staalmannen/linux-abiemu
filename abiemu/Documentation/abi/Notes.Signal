@@ -1,0 +1,42 @@
+Drew, Joe, and Brandon.
+
+This file contains my code for the signal functions. I realized that the
+existing signal functions will not suffice. This module should do the
+proper processing for iBCS signals.
+
+There are patches to the emulate module offered by Drew in his pl14n code
+release. The Makefile was changed to include the module.
+
+In addition, I have include a signal.doc file which contains the text from
+my UNIX S5 manual describing the functions used by iBCS. I based the
+emulator code on this document. Please look it over and see if I have
+messed up. I believe it to be correct. However, it never hurts to have
+someone check the work before we can trust it.
+
+It follows what I believe to be the proper calling sequence for signals. I
+sent a message to the IBSC2 group with the text from the McGraw Hill book
+concerning signals. If you would like a copy of the message, then let me
+know.
+
+Of couse, this could be totally wrong. That is the whole point about
+sending this out to a limited distribution.
+
+In addition to the processing for the various function requests, you may
+have noticed that the signal _numbers_ must be changed between the values
+used by iBCS and Linux.
+
+I have had to modify the emulate.c module to export an additional
+procedure (and for emulate.c to use the procedure itself.) In addition, I
+change the branch table to re-direct the signal processing to the signal.c
+module.
+
+I hope that this will help the project when it has been proven workable.
+Please let me know how this turns out -- one way or the other.
+
+If it does work, then I'll give the final code to Drew to merge into the
+master code. That is unless, Drew, you already have it. :-)
+
+Thanks much.
+
+--
+Al Longyear           longyear@netcom.com         longyear@sii.com

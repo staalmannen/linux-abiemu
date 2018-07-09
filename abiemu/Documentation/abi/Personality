@@ -1,0 +1,88 @@
+*** Why are multiple personalities necessary?
+
+Personalities are used to provide the expected set of syscalls and error
+code mapping for non-Linux processes. In theory the set of syscalls and
+error codes should be standardised across all SYSV systems. In practice
+this is the case for SVR4, however SVR3 is a much older code base and
+many vendors have extended it leading to incompatibilities between the
+expected interfaces. Personalities allow us to vary the interface presented
+on a per-process basis thus allowing Linux to run binaries created for
+different vendor's extended SVR3s simultaneously.
+
+
+*** How are personalities implemented?
+
+The per-process task structure contains a field "personality". This defaults
+to 0 for Linux binaries, 1 (SVR4) for ELF binaries and 2 (SVR3) for COFF
+binaries. However when the COFF loader is called on to load a new binary
+it looks at the first 1k of data in each .comment section and compares
+the strings it finds with a built in table. If it finds a match it will
+set the personality appropriately.
+
+  When the application makes a system call the iBCS emulation layer uses
+the personality code in the per-process task structure to determine which
+system call mappings to use to locate the correct function.
+
+  If the function returns an (Linux) error code the iBCS emulation layer
+uses the personality code to determine which error code mappings to use
+to translate the error code in to a value the application will understand.
+
+
+*** What personalities are implemented?
+
+Currently the implemented personalities are SVR4, SVR3 (as a direct
+subset of SVR4), SCO 3.[24] and Wyse V/386 3.2.1. Of these the Wyse
+emulation is the most complete at this time. Rather than using the
+more common streams based TCP/IP stack on their SVR3, Wyse used a BSD
+implementation with a system call interface. Currently the Wyse emulation
+is the only one capable of running non-Linux TCP/IP binaries.
+
+
+*** When do I need to add a personality rather than use the default?
+
+When your applications start failing for inexplicable reasons! Seriously,
+if you have an SVR3 based Unix which does not currently have its own
+personality defined then you should check some things very carefully.
+
+  Firstly compare your system's /usr/include/sys/errno.h with the data
+in the Error.map file. If the values defined in your errno.h do not
+match those in the ABI column then you will need to create a new
+personality in order to map error codes to the correct values.
+
+  Next compare your system's /usr/include/sys.s with the data in the
+Syscall.map file. If there are system calls in your sys.s that don't
+do the same thing as those in the ABI column (other than ones that
+simply aren't implemented on your system) then you will need to create
+a new personality in order to mapp system calls to the correct functions.
+
+
+*** How do I add a new personality?
+
+The first step is to find a way for the COFF loader to recognise your
+binaries as being different. To do this you need to examine the comments
+embedded in a range of binaries, system executables, bought programs of
+various ages and locally compiled programs, using "mcs -p" to list the
+.comments sections. If you don't have "mcs" use "strings" and look for
+version or copyright messages. You are looking for one or more strings
+near the top which uniquely identify the system.
+
+  Once you have your identifying strings you must add a value for the
+new personality to linux/include/linux/personality.h (just use the
+next highest number) and add the strings to the table in the COFF loader
+linux/fs/binfmt_coff.c.
+
+  The next step is to modify the error map. Edit the file errmap.inc and
+look at the end of the file where there is an array of pointers to error
+maps call err_map. There is one entry for each personality. Add a new
+entry to the end for your personality. If your personality is compatible
+with an exising personality you can simply reuse the same error map (see
+the duplicate entries for the SVR4 map which is use for both SVR4 and
+SVR3 personalities), otherwise you must figure out how to create a new
+error mapping. One day it may be documented here :-).
+
+  Next you must modify the syscall mapping. Edit the file callmap.inc
+and look at the end of the file where there is an array containg one
+pointer for each personality. Add a new entry to the end. If your syscalls
+match one of the existing personalities you may reuse the existing map.
+Otherwise you have to build a new one. Again, one day it may be documented
+here...

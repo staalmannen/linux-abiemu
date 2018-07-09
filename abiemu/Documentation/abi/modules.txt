@@ -1,0 +1,80 @@
+A brief overview of the Linux-ABI modules
+2001-July-19
+Christoph Hellwig, <hch@caldera.de>
+
+Linux-ABI consists of a number of loadable kernel modules (you can also
+compile it directly into the kernel, but no one actually does).   This
+document is intended to give a brief overview on the aviable modules
+and how they can be classified in groups.
+
+
+=== Binary format modules
+
+Some of the personalities supported by Linux-ABI use different binary
+formats than the ELF format that is used by Linux native binaries.
+The follwoing binary format modules do exists:
+
+  o binfmt_coff
+
+	This modules supports the COFF binary format as used by elder
+	SysV-derivate operating systems.  It is used by the SVR3,
+	SCOSVR3, ISC and Wyse personalities.
+
+  o binfmt_xout
+
+	This module is intended for loading X.out binaries generated for
+	the Xenix operating system.
+
+These modules have to be loaded manually before using them.
+
+
+
+=== Personality modules
+
+Personality modules contain the the personality implementation and are
+thus the hearts of Linux-ABI.  Additionally most personality modules
+contain syscalls only used by that particular personality.  There are
+a lot of personality modules:
+
+  o abi-ibcs
+
+	Support for plain SVR3/SVR4 as specified in iBCS2 or iABI4.
+	Additionally this module contains the Xenix and ISC personalities,
+	but these should be moved away from here.
+
+  o abi-sco
+
+	This module implements the SCO Unix 3.x/ODT and OSR5 personalities.
+
+  o abi-solaris
+
+	The Solaris 2 emulator.
+
+  o abi-uw7
+
+	SCO UnixWare 7 / Caldera OpenUnix 8 emulator.
+
+  o abi-wyse
+
+	Support for Wyse V/386 ant it's multiprocessor variant.
+
+
+=== Backend modules
+
+As a lot of the functionality provided by the binary format modules is
+common to more than one of those, most of this functionality is moved to
+backend modules. There are only a few backend modules:
+
+  o abi-machdep
+
+	The machine depandand part of Linux-ABI (in fact currently
+	Linux-ABI is i386-specific, but that _will_ change).
+
+  o abi-svr4
+
+	Most of the syscalls used by all or many of the SVR3/SVR4 derivates.
+
+  o abi-socket
+
+	4BSD-style socket interface, currently only used by the Wyse
+	emulation.  This will probably go away.

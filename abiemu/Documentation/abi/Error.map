@@ -1,0 +1,143 @@
+Mapping of error codes from Linux to various personalities. Codes which Linux
+may generate but which can't be mapped directly in a given personality must
+be mapped to the nearest equivalent which may invoke the correct behaviour
+in the application. This is especially true for things like the ERESTART*
+set of error returns!
+
+NOTES:
+
+The Xenix set was built with reference to an old SCO Xenix manual rather
+than by reference to a real system. It may be incomplete or wrong. If anyone
+has access to the Xenix TCP/IP kit we need to add mappings for the TCP/IP
+error codes.
+
+Other personalities may need adding. COFF binaries default
+
+Linux Name	Linux	ABI	SCO	Wyse	Xenix	386bsd
+
+EPERM		 1						/* Operation not permitted */
+ENOENT		 2						/* No such file or directory */
+ESRCH		 3						/* No such process */
+EINTR		 4						/* Interrupted system call */
+EIO		 5						/* I/O error */
+ENXIO		 6						/* No such device or address */
+E2BIG		 7						/* Arg list too long */
+ENOEXEC		 8						/* Exec format error */
+EBADF		 9						/* Bad file number */
+ECHILD		10						/* No child processes */
+EAGAIN		11					35	/* Try again */
+ENOMEM		12						/* Out of memory */
+EACCES		13						/* Permission denied */
+EFAULT		14						/* Bad address */
+ENOTBLK		15						/* Block device required */
+EBUSY		16						/* Device or resource busy */
+EEXIST		17						/* File exists */
+EXDEV		18						/* Cross-device link */
+ENODEV		19						/* No such device */
+ENOTDIR		20						/* Not a directory */
+EISDIR		21						/* Is a directory */
+EINVAL		22						/* Invalid argument */
+ENFILE		23						/* File table overflow */
+EMFILE		24						/* Too many open files */
+ENOTTY		25						/* Not a typewriter */
+ETXTBSY		26						/* Text file busy */
+EFBIG		27						/* File too large */
+ENOSPC		28						/* No space left on device */
+ESPIPE		29						/* Illegal seek */
+EROFS		30						/* Read-only file system */
+EMLINK		31						/* Too many links */
+EPIPE		32						/* Broken pipe */
+EDOM		33						/* Math argument out of domain of func */
+ERANGE		34						/* Math result not representable */
+EDEADLK		35	45	45	45	36	11	/* Resource deadlock would occur */
+ENAMETOOLONG	36	78	78	228	EINVAL	63	/* File name too long */
+ENOLCK		37	46	46	46	45	77	/* No record locks available */
+ENOSYS		38	89	89	EINVAL	EINVAL	78	/* Function not implemented */
+ENOTEMPTY	39	93	145	231	EINVAL	66	/* Directory not empty */
+ELOOP		40	90	150	227	EINVAL	62	/* Too many symbolic links encountered */
+EWOULDBLOCK	EAGAIN	90	90	200	EINVAL	35	/* Operation would block */
+ENOMSG		42	35	35	35	43	?	/* No message of desired type */
+EIDRM		43	36	36	36	44	?	/* Identifier removed */
+ECHRNG		44	37	37	37	EINVAL	?	/* Channel number out of range */
+EL2NSYNC	45	38	38	38	EINVAL	?	/* Level 2 not synchronized */
+EL3HLT		46	39	39	39	EINVAL	?	/* Level 3 halted */
+EL3RST		47	40	40	40	EINVAL	?	/* Level 3 reset */
+ELNRNG		48	41	41	41	EINVAL	?	/* Link number out of range */
+EUNATCH		49	42	42	42	EINVAL	?	/* Protocol driver not attached */
+ENOCSI		50	43	43	43	EINVAL	?	/* No CSI structure available */
+EL2HLT		51	44	44	44	EINVAL	?	/* Level 2 halted */
+EBADE		52	?	50	50	EINVAL	?	/* Invalid exchange */
+EBADR		53	?	51	51	EINVAL	?	/* Invalid request descriptor */
+EXFULL		54	?	52	52	EINVAL	?	/* Exchange full */
+ENOANO		55	?	53	53	EINVAL	?	/* No anode */
+EBADRQC		56	?	54	54	EINVAL	?	/* Invalid request code */
+EBADSLT		57	?	55	55	EINVAL	?	/* Invalid slot */
+EDEADLOCK	58	?	56	56	36	11	/* File locking deadlock error */
+EBFONT		59	?	57	57	EINVAL	?	/* Bad font file format */
+ENOSTR		60				EINVAL	?	/* Device not a stream */
+ENODATA		61				EINVAL	?	/* No data available */
+ETIME		62				EINVAL	?	/* Timer expired */
+ENOSR		63				EINVAL	?	/* Out of streams resources */
+ENONET		64				EINVAL	?	/* Machine is not on the network */
+ENOPKG		65				EINVAL	?	/* Package not installed */
+EREMOTE		66				EINVAL	71	/* Object is remote */
+ENOLINK		67				EINVAL	?	/* Link has been severed */
+EADV		68				EINVAL	?	/* Advertise error */
+ESRMNT		69				EINVAL	?	/* Srmount error */
+ECOMM		70				EINVAL	?	/* Communication error on send */
+EPROTO		71				?	?	/* Protocol error */
+EMULTIHOP	72	74	74	74	?	?	/* Multihop attempted */
+EDOTDOT		73	76	76	76	?	?	/* RFS specific error */
+EBADMSG		74	77	77	77	?	?	/* Not a data message */
+EOVERFLOW	75	79	EINVAL	EINVAL	?	?	/* Value too large for defined data type */
+ENOTUNIQ	76	80	80	80	?	?	/* Name not unique on network */
+EBADFD		77	81	81	81	?	?	/* File descriptor in bad state */
+EREMCHG		78	82	82	82	?	?	/* Remote address changed */
+ELIBACC		79	83	83	83	?	?	/* Can not access a needed shared library */
+ELIBBAD		80	84	84	84	?	?	/* Accessing a corrupted shared library */
+ELIBSCN		81	85	85	85	?	?	/* .lib section in a.out corrupted */
+ELIBMAX		82	86	86	86	?	?	/* Attempting to link in too many shared libraries */
+ELIBEXEC	83	87	87	87	?	?	/* Cannot exec a shared library directly */
+EILSEQ		84	88	EINVAL	EINVAL	?	?	/* Illegal byte sequence */
+ERESTART	85	91	EINTR	EINTR	?	?	/* Interrupted system call should be restarted */
+ESTRPIPE	86	92	EINVAL	EINVAL	?	?	/* Streams pipe error */
+EUSERS		87	94	EINVAL	233	?	68	/* Too many users */
+ENOTSOCK	88	95	93	203	?	38	/* Socket operation on non-socket */
+EDESTADDRREQ	89	96	94	204	?	39	/* Destination address required */
+EMSGSIZE	90	97	95	205	?	40	/* Message too long */
+EPROTOTYPE	91	98	96	206	?	41	/* Protocol wrong type for socket */
+ENOPROTOOPT	92	99	EINVAL	207	?	42	/* Protocol not available */
+EPROTONOSUPPORT	93	120	97	208	?	43	/* Protocol not supported */
+ESOCKTNOSUPPORT	94	121	98	209	?	44	/* Socket type not supported */
+EOPNOTSUPP	95	122	99	210	?	45	/* Operation not supported on transport endpoint */
+EPFNOSUPPORT	96	123	100	211	?	46	/* Protocol family not supported */
+EAFNOSUPPORT	97	124	101	212	?	47	/* Address family not supported by protocol */
+EADDRINUSE	98	125	102	213	?	48	/* Address already in use */
+EADDRNOTAVAIL	99	126	103	214	?	49	/* Cannot assign requested address */
+ENETDOWN	100	127	104	215	?	50	/* Network is down */
+ENETUNREACH	101	128	105	216	?	51	/* Network is unreachable */
+ENETRESET	102	129	106	217	?	52	/* Network dropped connection because of reset */
+ECONNABORTED	103	130	107	218	?	53	/* Software caused connection abort */
+ECONNRESET	104	131	108	219	?	54	/* Connection reset by peer */
+ENOBUFS		105	132	63	220	?	55	/* No buffer space available */
+EISCONN		106	133	110	221	?	56	/* Transport endpoint is already connected */
+ENOTCONN	107	134	111	222	?	57	/* Transport endpoint is not connected */
+ESHUTDOWN	108	143	112	223	?	58	/* Cannot send after transport endpoint shutdown */
+ETOOMANYREFS	109	144	113	224	?	59	/* Too many references: cannot splice */
+ETIMEDOUT	110	145	114	225	?	60	/* Connection timed out */
+ECONNREFUSED	111	146	115	226	?	61	/* Connection refused */
+EHOSTDOWN	112	147	116	229	?	64	/* Host is down */
+EHOSTUNREACH	113	148	117	230	?	65	/* No route to host */
+EALREADY	114	149	92	202	?	37	/* Operation already in progress */
+EINPROGRESS	115	150	91	201	?	36	/* Operation now in progress */
+ESTALE		116	EINVAL	EINVAL	237	?	70	/* Stale NFS file handle */
+EUCLEAN		117	?	135	135	35	?	/* Structure needs cleaning */
+ENOTNAM		118	?	137	137	37	?	/* Not a XENIX named type file */
+ENAVAIL		119	?	138	138	38	?	/* No XENIX semaphores available */
+EISNAM		120	?	139	139	39	?	/* Is a named type file */
+EREMOTEIO	121	?	140	140	EINVAL	?	/* Remote I/O error */
+EDQUOT		122	?	ENOSPC	234	ENOSPC	69	/* Quota exceeded */
+
+ERESTARTSYS	512	EINTR	EINTR	EINTR	EINTR	EINTR
+ERESTARTNOINTR	513	EINTR	EINTR	EINTR	EINTR	EINTR
+ERESTARTNOHAND	514	EINTR	EINTR	EINTR	EINTR	EINTR	/* restart if no handler.. */

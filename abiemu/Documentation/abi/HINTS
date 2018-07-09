@@ -1,0 +1,245 @@
+PROBLEM:
+	Cannot determine user name by reference to /etc/passwd. Failure
+	to determine the user name causes some programs (notably programs
+	built with Informix 4GL) to exit.
+
+REASON:
+	The functions that parse /etc/passwd are sensitive under SCO
+	at least. A corrupt line is taken to be the end of the file
+	and further entries are ignored. Any line which has a null
+	home directory counts as a corrupt line for SCO.
+
+SOLUTION:
+	Ensure that all lines in /etc/passwd have home directories
+	specified. Simply edit /etc/passwd with an editor.
+
+
+# -----------------------------------------------------------------------
+
+PROBLEM:
+	Cannot connect to X server using local connection.
+
+REASON:
+	Some versions of X libraries seem to require 'localhost' to be
+	allowed to connect to the X server even if we aren't using a
+	TCP/IP connection. The X libraries used for VSI*FAX require
+	this, the X libraries used for WordPerfect don't.
+
+SOLUTION:
+	Explicitly allow 'localhost' to connect to the X server using
+	'xhost localhost'.
+
+
+# -----------------------------------------------------------------------
+
+PROBLEM:
+	Installation disks claim to be Unix tar format but they appear
+	to be blank MS-DOS format disks!
+
+REASON:
+	Unix provides two floppy devices, the normal floppy devices
+	that we all know and love (and which are listed as the Xenix
+	compatible devices in the man page) and a second set which
+	skips the first track of the disk. For some reason a few vendors
+	seem to use this second set when preparing distribution disks.
+	WordPerfect seem to do this. Linux currently only supports
+	the normal floppy devices.
+
+SOLUTION:
+	You have to skip the first track by hand and read each disk
+	individually. Try 'dd if=/dev/fd0 bs=18k skip=1 | tar xfv -'
+	for a 3.5" high density disk. Change the 18k to 15k for a
+	5.25" high density disk.
+
+# -----------------------------------------------------------------------
+
+PROBLEM:
+	A script bombs out with an unexpected EOF looking for "'". This
+	only happens on Linux.
+
+REASON:
+	There is a bug in the script which is only a problem on Linux.
+	Take the following example:
+
+		count=`ls | wc | awk '{ printf "%05d", $1 }`
+
+	Note the missing "'" at the end of the awk statment. The /bin/sh
+	supplied with SCO will assume (in this case correctly) that the
+	"'" should have occurred immediately before the closing "`" and
+	the expression will succeed. The /bin/sh used with Linux (normally
+	bash) does not make this assumption and gives an error message.
+
+SOLUTION:
+	Either fix the script or arrange to have it run by a SYSV shell
+	rather than bash.
+
+# -----------------------------------------------------------------------
+
+PROBLEM:
+	Test complains that a numeric argument is required before -eq, -le
+	etc.
+
+REASON:
+	The GNU shellutils test and the test built in to bash which are
+	the versions of test used under Linux do not accept a null
+	argument as equivalent to 0 so 'test "" -le 5' will give an error.
+	Under SCO a null argument is taken as equivalent to 0 so the
+	statement would be evaluated as 'test 0 -le 5'.
+
+SOLUTION:
+	Fix the script to check arguments for validity before using them
+	or provide a fixed version of test and ensure that it is used in
+	preference to any shell built in.
+
+# -----------------------------------------------------------------------
+
+PROBLEM:
+	Some X fonts supplied with packages appear corrupt.
+
+REASON:
+	These are probably snf fonts. The XFree86 X server used with
+	Linux appears to fail to load some snf fonts silently and displays
+	garbage. Pcf fonts work ok and should be used where possible.
+
+SOLUTION:
+	If you only have the snf fonts all you can do is to try asking the
+	vendor for pcf versions or the bdf definitions.
+
+	If you have the bdf definitions (WordPerfect ship them) then you
+	can build a pcf set using:
+
+		# for bdffn in *.bdf
+		> do
+		>   fn=`basename $bdffn .bdf`
+		>   [ -r $fn.snf ] && mv $fn.snf $fn.snf.old
+		>   bdftopcf -o $fn.pcf $bdffn
+		> done
+		# mkfontdir .
+		# xset fp rehash
+
+# -----------------------------------------------------------------------
+
+PROBLEM:
+	Function keys don't work.
+
+REASON:
+	The default sequences for function keys under Linux are "sort of"
+	VT10x like whereas you have probably told your application that
+	you are running on an ansi or SCO console.
+
+SOLUTION:
+	It is probably best to run as an ansi screen - especially if
+	colour is used - so use the "loadkeys" program to load the
+	SCO.map keyboard description from the PROD.Patches directory.
+	This directory also contains flexible termcap and terminfo
+	descriptions which will allow you run permanently with a SCO
+	or SVR4-like console.
+
+# -----------------------------------------------------------------------
+
+PROBLEM:
+	Line drawing characters come out as weird symbols.
+
+REASON:
+	The application believes you are using a console screen with a
+	PC character set and is using 8-bit codes rather than escape
+	sequences. Linux defaults to an ISO8859-1 character set though.
+
+SOLUTION:
+	Linux can be switched to PC character set mode with the escape
+	sequence ESC-(-U. Arrange to have this sequence sent either
+	before the application is started or as part of the initialisation
+	that the application does. You can restore the ISO character
+	set afterwards with ESC-(-K.
+
+# -----------------------------------------------------------------------
+
+PROBLEM:
+	SYSV binaries see the wrong time zone.
+
+REASON:
+	SYSV binaries establish the time zone from the TZ environment
+	variable whereas Linux uses BSD style zoneinfo files generally.
+
+SOLUTION:
+	Set the TZ environment variable to reflect your time zone. Note
+	that the zoneinfo mechanism can also use TZ in preference to
+	the /usr/lib/zoneinfo/localtime file if you wish. For this to
+	work you must have /usr/lib/zoneinfo/posixrules linked to one
+	of the US timezone files. The posixrules file defines how the
+	zoneinfo functions interpret TZ and this information is only
+	found in the US data files. See the documentation for the
+	timezone/zoneinfo package for details.
+
+# -----------------------------------------------------------------------
+
+PROBLEM:
+	BSD binaries don't see the right time zone.
+
+REASON:
+	Although BSD binaries use the same timezone handling method as
+	Linux they expect the zoneinfo information in different places.
+
+SOLUTION:
+	Make the links:
+
+		# ln -s /usr/lib/zoneinfo /etc/localtime
+		# ln -s /usr/lib/zoneinfo /usr/share/zoneinfo
+
+# -----------------------------------------------------------------------
+
+PROBLEM:
+	BSD binaries complain that they can't find /etc/termcap.
+
+REASON:
+	They may be lying. BSD sometimes uses /usr/share/misc/termcap
+	or ~/.termcap (if it exists).
+
+SOLUTION:
+	Either move termcap to /usr/share/misc and make /etc/termcap
+	a link to it or make /usr/share/misc/termcap a link to /etc/termcap.
+	The use of /usr/share/misc/termcap may be useful in a networked
+	environment.
+# -----------------------------------------------------------------------
+
+PROBLEM:
+	SVr4 binaries cannot locate shared libraries, or fail to start.
+
+REASON:
+	The shared libraries are not in the correct location, or the dynamic
+	loader cannot be located by the kernel.
+
+SOLUTION:
+	Put all SVr4 shared libraries in the directory /usr/i486-sysv4/lib.
+	Then create two symbolic links:
+
+	ln -s /usr/i486-sysv4/lib/libc.so.1 /usr/lib/libc.so.1
+	ln -s /usr/i486-sysv4/lib/ld.so.1 /usr/lib/ld.so.1
+# -----------------------------------------------------------------------
+
+PROBLEM:
+	SVr4 binaries want to access terminfo instead of termcap
+
+REASON:
+	SVr4 traditionally uses something called terminfo instead of
+	termcap to specify terminal characteristics.
+
+SOLUTION:
+	The ncurses distribution (available on many fine ftp sites)
+	contains a terminfo database.  Just install this, and you
+	should be all set.
+# -----------------------------------------------------------------------
+
+PROBLEM:
+	The Informix Dynamic Server installation for SCO says
+	invalid INFORMIXDIR or insufficient space.
+
+REASON:
+	It wants to scan /etc/mnttab to find all possible
+	filesystems. Since Linux uses /etc/mtab instead the
+	installation program is under the impression you have
+	no filesystems and no space(!).
+
+SOLUTION:
+	Run the perl script Tools/mkmnttab which will build an
+	/etc/mnttab from /etc/mtab.

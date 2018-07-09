@@ -1,0 +1,185 @@
+Call	ABI		SCO 3.2		SCO 3.4		Wyse V/386 3.2.1	386bsd
+
+  1	exit
+  2	fork
+  3	read
+  4	write
+  5	open
+  6	close
+  7	wait
+  8	creat
+  9	link
+ 10	unlink
+ 11	exec
+ 12	chdir
+ 13	time									fchdir
+ 14	mknod
+ 15	chmod
+ 16	chown
+ 17	brk/break
+ 18	stat									getfsstat
+ 19	seek/seek
+ 20	getpid
+ 21	mount
+ 22	umount
+ 23	setuid
+ 24	getuid
+ 25	stime									geteuid
+ 26	ptrace
+ 27	alarm									recvmsg
+ 28	fstat									sendmsg
+ 29	pause									recvfrom
+ 30	utime									accept
+ 31	stty									getpeername
+ 32	gtty									getsockname
+ 33	access
+ 34	nice									chflags
+ 35	statfs									fchflags
+ 36	sync
+ 37	kill
+ 38	fstatfs									stat
+ 39	setpgrp									getppid
+ 40	cxenix									lstat
+ 41	dup
+ 42	pipe
+ 43	times									getegid
+ 44	prof
+ 45	lock/plock								ktrace
+ 46	setgid									sigaction
+ 47	getgid
+ 48	signal									sigprocmask
+ 49	msgsys									getlogin
+ 50	sysi86/sys3b								setlogin
+ 51	sysacct/acct
+ 52	shmsys									sigpending
+ 53	semsys									sigaltstack
+ 54	ioctl
+ 55	uadmin									reboot
+ 56	???									revoke
+ 57	utssys									symlink
+ 58	???									readlink
+ 59	execv
+ 60	umask
+ 61	chroot
+ 62	fcntl									fstat
+ 63	ulimit									getkerninfo
+ 64	???									getpagesize
+ 65	???									msync
+ 66	???									vfork
+ 67	???									vread
+ 68	???									vwrite
+ 69	???									sbrk
+ 70	advfs									sstk
+ 71	unadvfs									mmap
+ 72	rmount									vadvise
+ 73	rumount									munmap
+ 74	rfstart									mprotect
+ 75	???									madvise
+ 76	rdebug									vhangup
+ 77	rfstop									vlimit
+ 78	rfsys									mincore
+ 79	rmdir									getgroups
+ 80	mkdir									setgroups
+ 81	getdents								getpgrp
+ 82	libattach								setpgid
+ 83	libdetach								setitimer
+ 84	sysfs									wait
+ 85	getmsg									swapon
+ 86	putmsg									getitimer
+ 87	poll									gethostname
+ 88	lstat		---		---		---			sethostname
+ 89	symlink		---		---		---			getdtablesize
+ 90	readlink	---		symlink		---			dup2
+ 91	setgroups	---		lstat		---			---
+ 92	getgroups	---		readlink	---			fcntl
+ 93	fchmod		---		---		---			select
+ 94	fchown		---		---		---			---
+ 95	sigprocmask	---		---		---			fsync
+ 96	sigsuspend	---		---		---			setpriority
+ 97	sigaltstack	---		---		---			socket
+ 98	sigaction	---		---		---			connect
+ 99	sigpending	---		---		---			accept
+100	context		---		---		---			getpriority
+101	evsys		---		---		---			send
+102	evtrapret	---		---		---			recv
+103	statvfs		---		---		---			sigreturn
+104	fstatvfs	---		---		---			bind
+105	???									setsockopt
+106	nfssys		---		---		---			listen
+107	waitsys		---		---		---			vtimes
+108	sigsendsys	---		---		---			sigvec
+109	hrtsys		---		---		---			sigblock
+110	acancel		---		---		---			sigsetmask
+111	async		---		---		---			sigsuspend
+112	priocntlsys	---		---		---			sigstack
+113	pathconf	---		---		---			recvmsg
+114	mincore		---		---		---			sendmsg
+115	mmap		---		---		---			vtrace
+116	mprotect	---		---		---			gettimeofday
+117	munmap		---		---		---			getrusage
+118	fpathconf	---		---		---			getsockopt
+119	vfork		---		---		---			resuba
+120	fchdir		---		---		---			readv
+121	readv		---		---		---			writev
+122	writev		---		---		---			settimeofday
+123	xstat		---		---		---			fchown
+124	lxstat		---		---		---			fchmod
+125	fxstat		---		---		---			recvfrom
+126	xmknod		---		---		---			setreuid
+127	clocal									setregid
+128	setrlimit	---		---		lstat			rename
+129	getrlimit	---		---		readlink		truncate
+130	lchown		---		---		symlink			ftruncate
+131	memcntl		---		---		---			flock
+132	getpmsg		---		---		---			mkfifo
+133	putpmsg		---		---		gethostname		sendto
+134	rename		---		---		sethostname		shutdown
+135	uname		---		---		getdomainname		socketpair
+136	setegid		---		---		setdomainname		mkdir
+137	sysconfig	---		---		---			rmdir
+138	adjtime		---		---		setreuid		utimes
+139	systeminfo	---		---		setregid		sigreturn
+140	???									adjtime
+141	seteuid		---		---		---			getpeername
+142	---		---		---		---			gethostid
+143	---		---		---		---			sethostid
+144	---		---		---		---			getrlimit
+145	---		---		---		---			setrlimit
+146	---		---		---		---			killpg
+147	---		---		---		---			setsid
+148	---		---		---		---			quotactl
+149	---		---		---		---			quota
+150	---		---		---		---			getsockname
+151	---		---		---		---
+152	---		---		---		---
+153	---		---		---		---
+154	---		---		---		---
+155	---		---		---		---			nfssvc
+156	---		---		---		---			getdirentries
+157	---		---		---		---			statfs
+158	---		---		---		---			fstatfs
+159	---		---		---		---
+160	---		---		---		---			async_daemon
+161	---		---		---		---			getfh
+162	---		---		---		---			getdomainname
+163	---		---		---		---			setdomainname
+164	---		---		---		---			uname
+165	---		---		---		---			sysarch
+166	---		---		---		---
+167	---		---		---		---
+168	---		---		---		---
+169	---		---		---		---			semsys
+170	---		---		---		---			msgsys
+171	---		---		---		---			shmsys
+172	---		---		---		---
+173	---		---		---		---
+174	---		---		---		---
+175	---		---		---		---			ntp_gettime
+176	---		---		---		---			ntp_adjtime
+177	---		---		---		---			vm_allocate
+178	---		---		---		---			vm_deallocate
+179	---		---		---		---			vm_inherit
+180	---		---		---		---			vm_protect
+181	---		---		---		---			setgid
+182	---		---		---		---			setegid
+183	---		---		---		---			seteuid

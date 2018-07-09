@@ -1,0 +1,143 @@
+2006-01-23	Frederic Wenzel  <fred@osuosl.org>
+
+	linux-abi-2.6.15
+
+	* brought sourceforge linux-abi tree up to date
+	* included various patches out of the sf.net patch area
+	* credits to all of the contributors there.
+
+2002-01-03  Christoph Hellwig  <hch@caldera.de>
+
+	linux-abi-2.4.17.0
+
+	* rework/cleanup lcall7 syscall handling
+	* make sure x.out sections aren't loaded into illegal areas
+	* fix SVR4 mmap() to always assume post-SunOS4 behaviour
+
+2001-11-24  Christoph Hellwig  <hch@caldera.de>
+
+	linux-abi-2.4.15.0
+
+	* simplify wyse socket handling, use native syscalls directly where
+	  possibles else use normal calling conventions
+	* fix <linux/syscall.h> compilation for non-i386 machines (Olaf Hering)
+	* fix alignment checks in binfmt_xout (based on patch by Joerg Ahrens)
+	* rewrite abi_brk: fix (theoretical) races, check for page alignment
+	* don't try to take a non-existant lock in xnx_nap, cleanup xnx_nap.
+	* fix value reported by sysi86(SI86MEM).
+
+2001-11-18  Christoph Hellwig  <hch@sb.bsdonline.org>
+
+	linux-abi 2.4.14.0
+
+	* small binfmt_xout bugfixes (Joerg Ahrens)
+	* move isc into it's own personality
+	* make all personalities independant of abi-ibcs
+	* merge socket handling into abi-wyse
+
+2001-10-22  Christoph Hellwig  <hch@sb.bsdonline.org>
+
+	linux-abi 2.4.12.0
+
+	* big mmap rewrite
+	  | correctly check for flags in svr4_mmap
+	  | use svr4_mmap for the UnixWare personality as well
+	  | OpenServer has it's own implementation now as it supports
+	    rather different flags than SVR4 & derivates
+	* more header cleanups - all helper routines are now in abi/util/*.h
+
+2001-10-04  Christoph Hellwig  <hch@sb.bsdonline.org>
+
+	linux-abi 2.4.10.0
+
+	* add MODULE_DESCRIPTION/MODULE_AUTHOR/MODULE_LICENSE tags
+	* don't use alternate prefix for directories (David Mosberger)
+	* fix non-modular buil
+	* cleanup stat handling
+	  | use Alexander Viro's kstat concept
+	  | all emulations now have their own xstat implementations
+	  | fixed overflows
+	* add full-fledged types.h headers for all peronalities
+
+2001-08-06  Christoph Hellwig  <hch@sb.bsdonline.org>
+
+	linux-abi 2.4.9.0
+
+	* fix missing solaris socket exports
+	* move Xenix support from ibcs to sco module,
+		make unconditional
+	* UnixWare LFS fixes
+	* make the actual code work on the Alan Cox tree
+
+2001-08-06  Christoph Hellwig  <hch@sb.bsdonline.org>
+
+	linux-abi 2.4.7.0
+
+	* some final polishing for segmented 286 x.out binaries (Joerg Ahrens)
+	* fix SPX handling (again)
+	* fix setpgrp and cleanup procids while we're at it
+	* update SCO syscall table to match OSR506a
+
+2001-07-19  Christoph Hellwig  <hch@sb.bsdonline.org>
+
+	linux-abi 2.4.6.1
+
+	* rewritten /dev/socksys handling
+	* fix more non-x86 breakage (Olaf Hering)
+	* port solaris native sockets from sparc64
+	* add sysctl support for runtime-tweaking
+	* add cxenix to the ibcs sysent table for Xenix/386 (Jürgen Günther)
+	* (re)add support for segmented x.out binaries (Joerg Ahrens)
+	  | I probably broke it while rebasing against -CURRENT
+	* reject IRIX binaries on mips32 (David Woodhouse)
+
+2001-07-09  Christoph Hellwig  <hch@sb.bsdonline.org>
+
+	linux-abi 2.4.6.0
+
+	* svr4/signal.c typo fix
+	* make cxenix debug printk's less verbose (Christian Lademann)
+	* misc small bugfixes (Christian Lademann)
+	* compile fixes for !CONFIG_ABI on non-x86 architectures
+
+2001-06-18  Christoph Hellwig  <hch@sb.bsdonline.org>
+
+	linux-abi 2.4.5.1
+
+	* rewrite of abi_sigsuspend() to make it work as expected
+	* fix cxenix syscall table
+	* actually initialize socksys
+
+2001-06-09  Christoph Hellwig  <hch@sb.bsdonline.org>
+
+	linux-abi 2.4.5.0
+
+	* rewrite of kernel exec_domain support
+	* make faking of SCO utsname information configurable
+	* get rid of SYS() and sysfunc_p (Arjan van de Ven)
+	* fix socket families (Stephan Springl)
+	* fix SCO signal mapping (Stephan Springl)
+	* fix SCO (and Wyse) error mapping
+	* continued source tree restructuring
+
+2001-04-31  Christoph Hellwig  <hch@sb.bsdonline.org>
+
+	linux-abi 2.4.4.0
+
+	* disable tracing by default
+	* rewrite of the SYSV IPC code
+	* add support for SCO OpenServer 5 ELF binaries
+	* fix an error in binfmt_coff that does not clear the return value
+	* provide generic template macros for stat and friends
+	* start of source tree reorganization
+
+2001-03-30  Christoph Hellwig  <hch@sb.bsdonline.org>
+
+	linux-abi 2.4.3.0
+
+	* fix shared library support for COFF
+	* x.out is now supported (again)
+	* redo setting of personality based on ELF headers
+	* get rid of CONFIG_ABI_TRACE (and a lot of nasty ifdefs)
+	* added documentation, mostly from iBCS
+

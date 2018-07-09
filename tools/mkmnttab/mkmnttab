@@ -1,0 +1,26 @@
+#!/usr/bin/perl
+#
+# Create a SCO-compatible /etc/mnttab out of a Linux /etc/mtab.
+# Baba Z Buehler <baba@beckman.uiuc.edu>
+
+$mnttab_struct = "a32 a32 I L";
+
+open(MTAB, "/etc/mtab") || die "Cannot open /etc/mtab: $!\n";
+open(MNTTAB, ">/etc/mnttab") || die "Cannot open /etc/mnttab: $!\n";
+
+while(<MTAB>) {
+    chop;
+    /^(\S*)\s(\S*)\s(\S*)\s.*$/;
+    $device = $1;
+    $mountpt = $2;
+    $fstype = $3;
+    if($fstype ne "nfs" && $fstype ne "proc") {
+        $mnttab_rec = 
+            pack($mnttab_struct, $device, $mountpt, 0x9d2f, time());
+        syswrite(MNTTAB, $mnttab_rec, 72);
+        print "Made entry for: $device $mountpt $fstype\n";
+    }
+}
+
+close(MNTTAB);
+exit 0;

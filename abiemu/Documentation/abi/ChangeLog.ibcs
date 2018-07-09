@@ -1,0 +1,2769 @@
+Thu Nov  5 21:45:41 GMT 1998
+
+	* Fixed the bug that lets reads and writes on /dev/socksys
+	  take out the kernel.
+	  -- Mike
+
+	* Added a kludge around for Sybase isql which appears to
+	  have initialised a struct sockaddr using:
+		 sa.sa_family = htons(AF_INET);
+	  I guess this works on SCO?
+	  -- Mike
+
+
+Sat Oct 31 14:15:44 GMT 1998
+
+	* Documentation update.
+
+	* If we are doing a T_BIND_REQ with a null address we can
+	  ignore the connection backlog. Listening makes no sense
+	  but some software seems to set it 1 for the hell of it.
+	  -- Mike
+
+
+Tue Oct 20 20:34:20 BST 1998
+
+	* Changed the debug messages printed when exec tracing
+	  sees a pointer error on an arg or env entry. It may not
+	  be a "real" error. It could be that we just cannot get
+	  a free page or perhaps the entry is too long for getname().
+	  Whatever, we do not really care at this point anyway.
+	  -- Mike
+
+
+Sat Oct 17 20:24:59 BST 1998
+
+	* Documentation update for today's release.
+	  -- Mike
+
+
+Thu Oct 15 21:39:16 BST 1998
+
+	* When checking personality only look at the base personality
+	  and ignore the flags. There is at least one case I can
+	  think of, PER_SHORT_INODE, where the personality should
+	  be considered the same even when the flags are different.
+	  -- Mike
+
+	* Added the location of the kernel source as an option
+	  in the CONFIG. Hopefully this will make it a little
+	  more obvious that iBCS is *dependant* on the kernel.
+	  -- Mike
+
+	* Set SO_BSDCOMPAT on sockets. SYSV has BSD handling of
+	  ICMP errors on UDP sockets rather than RFC conformance.
+	  I think...
+	  -- Mike
+
+
+Wed Oct 14 22:50:48 BST 1998
+
+	* When using some user stack as temporary work space we
+	  only leave 1k between the work space and the real user
+	  stack. This is because Informix Dynamic Server uses
+	  threads with limited stack space and the idea of dropping
+	  16k below what would normally be touched on a SCO system
+	  worries me a bit.
+	  -- Mike
+
+
+Sun Oct 11 11:58:58 BST 1998
+
+	* Changed the Tools Makefile to install mkmnttab in
+	  /usr/bin. Informix Dynamic Server _requires_ a
+	  valid /etc/mnttab.
+	  -- Mike
+
+
+Sun Oct 11 11:44:58 BST 1998
+
+	* When doing an I_PEEK or I_NREAD STREAMS ioctl we have
+	  to do a probe on sockets in case we need to generate
+	  a control message (e.g. T_CONN_IND) which should then
+	  be offered. This also allows T_CONN_IND messages to be
+	  returned in several MORECTL divided pieces should it
+	  ever be necessary. This is required by Informix Dynamic
+	  Server which does a poll then I_PEEK on a listening
+	  socket before actually picking up the connection. Dynamic
+	  Server is system call hell :-).
+	  -- Mike
+
+	* When we do a timod operation via an ioctl there seems
+	  to be no way to cope if the returned message is larger
+	  than the original request. We can't expect the app to
+	  come back for the extra and returning MORECTL to the
+	  app seems to confuse things. Therefore we just discard
+	  the excess. This case is required when an app (e.g.
+	  Informix Dynamic Server) tries to set SO_LINGER using
+	  an int instead of a struct linger via an ioctl.
+	  -- Mike
+
+	* Added some debug to the poll handler so we can see what
+	  is being polled.
+	  -- Mike
+
+	* More debug message changes.
+	  -- Mike
+
+	* Wrap SO_LINGER handling so we can survive if an int is
+	  passed instead of s struct linger. It seems that other
+	  systems do not do such robust error checking as Linux.
+	  Note that if an int is passed we probably do not do what
+	  other systems would but at least we don't give unexpected
+	  errors to broken applications.
+	  -- Mike
+
+
+Sat Oct 10 15:58:29 BST 1998
+
+	* Added an entry to Doc/HINTS noting the the Informix
+	  Dynamic Server install requires an /etc/mnttab.
+	  -- Mike
+
+	* Wrong option length being passed through to setsockopt()
+	  from the TLI/XTI optmgmt routine.
+	  -- Mike
+
+	* When stating files only map "ext2" to "HTFS" for SCO
+	  programs - and then only if the filesystem name really
+	  was "ext2".
+	  -- Mike
+
+	* SCO has a different value for the _SC_PAGESIZE argument
+	  to sysconf() than SVR4. Informix wants it to work.
+	  -- Mike
+
+	* Hmmm, Informix Dynamic Server may or may not be looking
+	  at the major number on a socket. (I _think_ it does
+	  sometimes). It definitely checks that sockets have
+	  S_IFCHR set in their file modes though...
+	  -- Mike
+
+	* Changed some debug messages to make it easier to read
+	  logs when more than one iBCS handled process is running.
+	  -- Mike
+
+	* If we get a STREAMS ioctl on a file descriptor only
+	  initialize the socksys handler on it if it is not
+	  already a socket but does belong to the socksys device.
+	  -- Mike
+
+
+Thu Oct  8 21:20:43 BST 1998
+
+	* When punting a pseudo device transport provider to a
+	  socket copy the device numbers between the inodes. This
+	  is because Informix Dynamic Server stats the pseudo
+	  device node (/dev/socksys) then stats the socket it
+	  gets and compares the major numbers. Sheesh...
+	  -- Mike
+
+	* If socksys_close gets something that is not a socket
+	  it is probably the original pseudo device which was
+	  opened just for an ioctl or two. This is not an error.
+	  -- Mike
+
+	* Some programs, notably the Informix Dynamic Server
+	  install program compare the filesystem name from a
+	  stat or sysfs against their own hard coded list of
+	  known "real" filesystems. Hence we call "ext2" "HTFS"
+	  instead for SCO processes.
+	  -- Mike
+
+	* Informix DS also checks the release part of the utsname
+	  data to make sure it says "3.2v5.0.0". So now the
+	  utsname struct looks even more like SCO.
+	  -- Mike
+
+	* Only dump the ctl part of messages in timod if
+	  tracing is enabled.
+	  -- Mike
+
+	* SCO has statvfs in the same place as SVR4 but they have
+	  added a field slap bang in the middle of the struct to
+	  allow some inodes to be reserved for root in much the
+	  same way that some blocks may be reserved.
+	  -- Mike
+
+
+Thu Oct  8 20:48:46 BST 1998
+
+	* On timod bind and connect the size of the address is
+	  allowed to be the _used_ bytes whereas the underlying
+	  socket functions require the _total_ bytes. This is
+	  a problem for Sybase.
+	  -- Mike
+
+
+Sun Aug 30 21:49:46 BST 1998
+
+	* Changed socksys.c to handle new file_operations struct
+	  in kernel 2.1.119 and later.
+	  -- Mike
+
+
+Sat Aug 22 19:57:01 BST 1998
+
+	* Fixes and additions to user pointer checking in ipc.c
+	  -- Mike
+
+	* Changed some more KERN_ERRs to KERN_DEBUGs in the
+	  STREAMS ioctl support.
+	  -- Mike
+
+
+Fri Aug 21 20:24:32 BST 1998
+
+	* Somehow fchdir had been missed from the main iBCS call
+	  map even though it had been put in the BSD map. Oops.
+	  -- Mike
+
+
+Wed Aug 19 23:12:47 BST 1998
+
+	* ALPHA 2.1 release number 2...
+	  -- Mike
+
+
+Wed Aug 19 20:43:09 BST 1998
+
+	* Avoid calling rt_sigaction if the mapped signal number
+	  is -1. It is not strictly necessary but why bother?
+	  -- Mike
+
+	* Added David Bruce's updated x286emul.
+	  -- Mike
+
+
+Mon Aug 17 21:29:53 BST 1998
+
+	* Avoid calling fput with a NULL file pointer.
+	  -- Mike
+
+
+Sun Aug 16 17:32:20 BST 1998
+
+	* Fix to copy_{to,from}_user return checking. In many
+	  cases we do not care because they are behind verify_area
+	  checks but in some we do - and copy_{to,from}_user
+	  returns the number of bytes _uncopied_.
+	  -- Mike
+
+
+Sat Aug 15 23:39:42 BST 1998
+
+	* Change the flock handling to bounce the flock struct
+	  through kernel space rather than using an in place
+	  modification. The assumptions we were making about
+	  segment registers seem to have become invalid at some
+	  point. We could go to put_user(get_user()) but moving
+	  the whole struct is probably more robust. Which is
+	  faster? I dunno...
+	  -- Mike
+
+
+Sat Aug 15 22:30:41 BST 1998
+
+	* Changes to signal functions. Previous code confused old and
+	  new sigsets and could have lead to memory corruption and
+	  was likely the cause of signals getting blocked unexpectedly.
+	  Now we use the rt_sig* and new sigset interface to the
+	  kernel exclusively (in a few years the old stuff may be
+	  removed). This does means that a non-Linux program may
+	  now operate on signals >32 which may not have existed
+	  (and therefore would have errored) in the native environment.
+	  This may be considered a bug or a feature as appropriate...
+	  -- Mike
+
+
+Mon Jul 20 22:23:14 BST 1998
+
+	* ALPHA 2.1 release...
+	  -- Mike
+
+
+Mon Jul 20 20:55:47 BST 1998
+
+	* Added support for I_FDINSERT in the STREAMS/TLI message
+	  protocol handling. This allows TLI server code to work
+	  using a _real_ libnsl_s (tested briefly) but will break
+	  server code using my replacement libnsl_s until I update
+	  it. (It should probably use an I_FDINSERT simply so it
+	  can still run under SYSV if ever necessary.)
+	  -- Mike
+
+	* Use TIOCINQ instead of FIONREAD in the STREAMS ioctl handler.
+	  FIONREAD isn't actually supported on sockets. The socksys
+	  code already had this right.
+	  -- Mike
+
+	* Do the MOD_INC, MOD_DEC calls for sockets in the inherit
+	  and release handling only to reduce the opportunity for,
+	  ah, "oversights".
+	  -- Mike
+
+
+Thu Jul 16 22:11:48 BST 1998
+
+	* Finally got round to adding a GNU CopyLeft!
+	  -- Mike
+
+	* Set up an XTI/TLI private state struct on all sockets at
+	  the same time we plug our own file operations in. This
+	  costs a small amount of extra memory per socket. However
+	  this is strictly correct (although unlikely to be actually
+	  _required_ by anything). It also allows us to set up TEPs
+	  created by XTI/TLI listen/accept easily so they have a
+	  chance of working.
+	  -- Mike
+
+	* XTI/TLI fixes:
+	  Do not auto-listen in getmsg() - listen() after connect()
+	  appears to crash some 2.1 kernels(?).
+	  Change the probe for activity in getmsg() to use the
+	  new poll handler directly.
+	  Handle listening TEPs slightly better.
+	  -- Mike
+
+	* Changed a stray KERN_ERR to KERN_DEBUG in ioctl.c
+	  -- Mike
+
+
+Fri Jul  3 23:20:37 BST 1998
+
+	* Fixed the initial set up of the argument and environment
+	  lists which were broken during the change to 2.1 style
+	  user memory access.
+	  -- Mike
+
+
+Mon Jun 29 22:50:11 BST 1998
+
+	* Put kernel_version definition back in emulate.c
+	  -- Mike
+
+	* Change loaders to set start_text, end_text, start_data,
+	  end_data, start_brk, brk fully.
+	  -- Mike
+
+
+Thu Jun 25 21:18:11 BST 1998
+
+	* Added support for the "fat" IPC structures which use
+	  32 bit uids, gids etc.
+	  -- Mike
+
+
+Wed Jun 24 21:30:09 BST 1998
+
+	* Change suser() checks to use the new capable() calls.
+	  -- Mike
+
+	* Changed the CONFIG default to NOT support Xenix 286. It
+	  is an ever increasing build problem. It needs a volunteer
+	  to rewrite it.
+	  -- Mike
+
+	* Add locking around system_utsname data using the uts_sem.
+	  -- Mike
+
+	* Changed to use dentry stuff. Use fget()/fput() to get
+	  file pointers rather than accessing task fd tables
+	  directly. Use poll interface for SYSV poll and timod
+	  blocking checks. Use lock_kernel()/unlock_kernel()
+	  around stat routines and other namei stuff. Use dput()
+	  to release dentries obtained with namei(). Other
+	  incidental fixes to what went before as I noticed them.
+	  -- Mike
+
+
+Tue Jun  9 20:02:56 BST 1998
+
+	* More changes for new module conventions.
+	  -- Mike
+
+	* Changed signal stuff to new conventions.
+	  -- Mike
+
+	* Changed getname() calling convention.
+	  -- Mike
+
+	* Changed fs type to mm_segment_t.
+	  -- Mike
+
+	* Changed user VM accesses to use new conventions.
+	  -- Mike
+
+
+Sat Jun  6 20:30:00 BST 1998
+
+	* Changed to new module conventions.
+	  -- Mike
+
+
+Thu May 28 22:30:45 BST 1998
+
+	* Removed VM_STACK_FLAGS tests.
+	  -- Mike
+
+	* Remove VM_GROWSDOWN tests.
+	  -- Mike
+
+	* Removed MAP_EXECUTABLE tests.
+	  -- Mike
+
+	* Removed MAP_DENYWRITE tests.
+	  -- Mike
+
+	* Removed STACK_TOP tests.
+	  -- Mike
+
+	* Removed FORKNOEXEC tests.
+	  -- Mike
+
+	* Removed INIT_MM tests.
+	  -- Mike
+
+
+Mon May 18 22:49:56 BST 1998
+
+	* Fixed xnx_rdchk() return value.
+	  -- Mike
+
+	* The serial number returned in the SCO utsname struct
+	  can now be set with sco_serial="..." as a module
+	  option. Some program apparently want to find a real,
+	  believable serial number there. This should be documented
+	  somewhere other than here I guess...
+	  -- Mike
+
+
+Mon May 18 22:03:49 BST 1998
+
+	* A class 't' ioctl with no arg type stuff in the top
+	  word is either an SVR4 tape ioctl a Coherent BSD-ish
+	  termios ioctl.
+	  -- Mike
+
+
+Mon Feb  2 22:57:45 GMT 1998
+
+	* Other relatively minor changes to allow compilation
+	  under glibc (specifically 2.0.6 but it shouldn't
+	  matter).
+	  -- Mike
+
+	* Added an explicit -I flag to search /usr/src/linux/include
+	  since glibc doesn't necessarily require the kernel
+	  includes to be symlinked under /usr/include.
+	  -- Mike
+
+	* The personality defaults in binfmt_coff should probably
+	  select short inodes on the assumption that newer stuff
+	  is likely to be built as ELF anyway. I hope.
+	  -- Mike
+
+
+Wed Nov 19 19:28:07 GMT/BST 1997
+
+	* Attempt to work around problems with sign extension
+	  when programs believe that the fs magic in a sysfs()
+	  call is short rather than long.
+	  -- Mike
+
+	* Added IPPROTO_IP/SOL_IP option name mapping for
+	  {get,set}sockopt. This is correct for SCO OS5 and
+	  hopefully for other SYSV derived Unices. Note that
+	  SCO OS5 ping still doesn't work because it uses an
+	  unsigned char for the IP_TTL value whereas Linux
+	  wants an int - and it objects to getting an error
+	  return. Apparently POSIX 1003g says IP_TTL should
+	  be an unsigned char so OS5, or at least its ping,
+	  is at fault. This probably isn't worth hacking
+	  around unless someone _really_ needs it.
+	  -- Mike
+
+
+Wed Nov 12 22:28:19 GMT/BST 1997
+
+	* Added the SCO-ish syscall shortcut to the socksys
+	  networking code.
+	  -- Mike
+
+
+Fri Nov  7 20:13:05 GMT/BST 1997
+
+	* Oops, I installed the SCO signal tables in the old
+	  personality mapping but forgot to create a specific
+	  SCO personality using them.
+	  -- Mike
+
+
+Thu Nov  6 08:04:37 GMT/BST 1997
+
+	* No, it really should be USR1 for URG under SCO, not
+	  USR2. This is according to the SCO Network Programmer's
+	  documentation. The previous problem was because
+	  confusion between the SVR4 and SCO/SVR3 requirements
+	  prevented a SCO program from registering a handler
+	  for the right signal, I think.
+	  -- Mike
+
+
+Wed Nov  5 14:23:22 GMT/BST 1997
+
+	* Created a new signal mapping for SCO and mapped
+	  Linux SIGURG to SCO SIGUSR2. Also changed the
+	  plain ibcs mapping for SIGURG back to IBCS_SIGURG.
+	  Previously I had SIGURG mapped to SIGUSR1 for
+	  what my subconscious says was a good reason but
+	  I can't figure out where I got it from. The USR2
+	  mapping is according to Peter Brueckner - and if
+	  it works for him...
+	  -- Mike
+
+
+Wed Nov  5 09:14:27 GMT/BST 1997
+
+	* Repair the STREAMS based socket code. The new socket
+	  hashing in 2.0.30 and beyond means the old code no
+	  longer works. We now delay replacing the fd with
+	  a socket until the first read, write or ioctl. Since
+	  the open has completed at this stage and the fd is
+	  fully initialized we can then use dup() to do the
+	  fd switch, which should always work. As a side effect
+	  this allows us to auto-connect an SPX pipe to X :0
+	  if the first operation is other than a single character
+	  write - which should allow us to handle v. old SVR3
+	  X programs side by side with their more modern, and
+	  common, multi-SPX pipe descendants.
+	    This does mean that some error returns from an
+	  open of a TLI special file might be delayed until
+	  the first operation, however a) these are unlikely
+	  to occur (they are things like no such protocol)
+	  and b) most opens of such files are hidden in
+	  functions like t_open() anyway so if there is a
+	  problem a simple fix to libnsl to check the first
+	  ioctl is all that is needed.
+	  -- Mike
+
+	* sysfs() used to enumerate available filesystems seems
+	  to be 0 based on Linux but 1 based on SYSV.
+	  -- Mike
+
+
+Sun Oct 12 00:18:33 GMT/BST 1997
+	* Ioctls on the NFS pseudo device need to go via the
+	  emulation code rather than the native ioctl handler.
+	  -- Mike
+
+
+Sat Aug 16 14:56:24 GMT/BST 1997
+
+	* Changed the use of errno in a prototype in ibcs.h to
+	  avoid possible conflict with an SMP errno definition
+	  which could get inherited from an include file if we
+	  aren't careful.
+	  -- Mike
+
+
+Sat Jul 12 01:00:00 GMT/BST 1997
+
+	* Added Xenix locking() modes 5, 6, 7 as per patch from
+	  David Bruce <admin@hulcote.com> (there were others
+	  too). I rewrote it to be a bit cleaner but I haven't
+	  tested it (it's late...). Some one will tell me I guess.
+	  -- Mike
+
+Fri Jul 11 22:27:13 GMT/BST 1997
+
+	* Added more console ioctl traps to discourage programs
+	  from trying to do funky stuff with the console without
+	  logging unsupported ioctl messages.
+	  -- Mike
+
+	* sysfs() can, apparently, map an fs magic number to
+	  an fs name. We do this outside the kernel sysfs()
+	  because there seems no clean way to do it. We simply
+	  have a list of known magic numbers hard coded :-(.
+	  -- Mike
+
+	* Implemented sysconfig(). This is appears to be the SVR4
+	  forerunner to the POSIX sysconf().
+	  -- Mike
+
+
+Tue May 13 20:52:05 GMT/BST 1997
+
+	* Hand off xmknod calls via ibcs_mknod so that we can
+	  create a directory if that is what the flags imply.
+	  I have not tested to see if xmknod is allowed to create
+	  directories - I just noticed it in passing.
+	  -- Mike
+
+	* Added SCO's F_GETHFDO (get highest fd open) fcntl. This is
+	  used by /bin/csh on SCO OS5 to save a few syscalls.
+	  -- Mike
+
+
+Tue May 13 00:10:09 GMT/BST 1997
+
+	* More changes to handle long/short inode environments
+	  plus more explanation in the code. Are we having fun yet?
+	  -- Mike
+
+
+Sat May 10 15:19:39 GMT/BST 1997
+
+	* Added socketpair() to the socksys emulation. This is
+	  as implemented by SCO OpenServer 5.
+	  -- Mike
+
+	* Change binfmt_coff.c to recognise programs compiled for
+	  SCO OpenServer 5, programs compiled for SCO 3.2.4 and
+	  programs compiled under SCO OpenServer 5 but with
+	  compatibility for ODT3.0. Why? Well, sometimes we
+	  should be giving long inodes in returns from getdents,
+	  sometimes short inodes. We don't just want to mask
+	  off the high part because that can lead to some
+	  things becoming invisible. We don't want that.
+	  -- Mike
+
+
+Fri May  9 23:29:37 GMT/BST 1997
+
+	* Added some more tape ioctls.
+	  -- Mike
+
+
+Wed Apr 16 23:12:37 GMT/BST 1997
+
+	* Fix memory leaks in poll.c and change ENOMEM return
+	  to EAGAIN.
+	  -- Mike
+
+
+Tue Mar 11 21:29:15 GMT/BST 1997
+
+	* Add {get,set}rlimit to the SYSV personalities.
+	  -- Mike
+
+
+Fri Mar  7 21:04:24 GMT/BST 1997
+
+	* Only build x286emul if EMU_X286 is enabled in CONFIG. There
+	  are many insallations which appear to either not have the
+	  a.out compiler support or have it installed incorrectly.
+	  -- Mike
+
+
+Tue Feb 18 22:04:39 GMT/BST 1997
+
+	* Removed unnecessary and incorrect includes.
+	  -- Mike
+
+
+Wed Feb 12 22:03:13 GMT/BST 1997
+
+	* Documentation updates for release.
+	  -- Mike
+
+
+Mon Feb 10 22:36:27 GMT/BST 1997
+
+	* Dammit! The inode folding in stat() and getdents() was
+	  out of step _again_ :-(.
+	  -- Mike
+
+
+Sun Jan  5 17:20:20 GMT/BST 1997
+
+	* sysconf(_SC_CLK_TCK) should return the value of HZ.
+	  -- Mike
+
+	* Small clarification to README concerning shared libraries.
+	  -- Mike
+
+	* Removed the bit about UnixWare X binaries not working from
+	  Doc/HINTS. Now we have STREAMS/TLI emulation this is no
+	  longer true (and hasn't been for a while).
+	  -- Mike
+
+
+Sat Jan  4 19:31:26 GMT/BST 1997
+
+	* If we open() something that is really a socket we close
+	  it and reopen it using socket(), connect(). This allows
+	  a Unix domain socket to look like a named pipe which
+	  enables more SYSV X clients to connect to a local X
+	  server using the local method (with suitable symlinks
+	  to map the pathnames).
+	  -- Mike
+
+
+Fri Jan  3 22:39:15 GMT/BST 1997
+
+	* Added a (simplistic) implementation of the I_CANPUT SVR4
+	  STREAMS ioctl.
+	  -- Mike
+
+	* Changed CONFIG.i386 to note that a correct setting of SMP
+	  is now necessary.
+	  -- Mike
+
+
+Wed Oct  2 16:28:39 GMT/BST 1996
+
+	* Intercept mknod() and allow it to create directories. Linux
+	  doesn't allow this but SYSV does. (What about BSD?)
+	  -- Mike
+
+
+Wed Oct  2 15:56:57 GMT/BST 1996
+
+	* Separated out the spx connect code so we can support old,
+	  single connection spx implementations once we know how to
+	  recognise them.
+	  -- Mike
+
+Wed Oct  2 15:54:45 GMT/BST 1996
+
+	* At some stage I add some binfmt_elf.c changes that were
+	  made to the kernel ELF loader in some 2.0.x patch. I forget
+	  which now but no one should be using the iBCS ELF loader
+	  currently anyway.
+	  -- Mike
+
+
+Fri Aug 23 15:42:04 GMT/BST 1996
+
+	* Moved svr4sig to the right place.
+	  -- Mike
+
+	* Moved error message strings to a separate file so they can
+	  be shared by emulate.c and solaris.c.
+	  -- Mike
+
+	* CONFIG files now define ARCH to be the CPU architecture. This
+	  is used to ensure that architecture specific files are only
+	  used when necessary.
+	  -- Mike
+
+	* Changed the getdents routine in open.c to use the same
+	  rules for folding 32 bit inodes to 16 as stat and read.
+	  -- Mike
+
+
+Mon Aug 19 13:33:42 GMT/BST 1996
+
+	* Correct IPC problem introduced with Sparc changes.
+	  -- Mike
+
+
+Fri Aug  9 13:27:49 GMT/BST 1996
+
+	* Fix the inode swapping for /dev/spx and XTI/TLI transports.
+	  -- Mike
+
+	* If a COFF binary doesn't have a .comment section we have no
+	  way to tell what personality we should be using. Switch to
+	  SCO anyway - odds on it is.
+	  -- Mike
+
+
+Wed Aug  7 14:22:11 GMT/BST 1996
+
+	* On SCO at least lseek on a character or block device
+	  returns 0 not -ESPIPE.
+	  -- C.A. Lademann <cal@zls.com>
+
+	* Some problems with /dev/spx and TLI end point handling that
+	  could leak descriptors, memory and leave the lists of file
+	  locks in an inconsistent state. Not to mention the fact that
+	  the socket data in an inode also contains a pointer back to
+	  the process' file structure. I _think_ I have this sorted
+	  out now...
+	  -- Mike
+
+	* Sparc changes broke select. While I was at it I changed it
+	  to use the newselect Linux call as well. If we build without
+	  tracing we'll save a few more bytes of code now too.
+	  -- Mike
+
+
+Wed Jul 31 14:16:38 GMT/BST 1996
+
+	* Map EAGAIN to EWOULDBLOCK for recv*() and send*() syscalls.
+	  Linux seems to return EAGAIN. X/Open allows either EAGAIN
+	  or EWOULDBLOCK. SVR4 and Wyse V/386 specify EWOULDBLOCK in
+	  their man pages. SCO doesn't admit to non-blocking possibilities
+	  in their man pages but some code seems to expect only
+	  EWOULDBLOCK.
+	  -- Mike
+
+
+Mon Jul 29 16:58:11 GMT/BST 1996
+
+	* Added a CONFIG option for SMP. This is enabled by default.
+	  I don't think this is a problem for non-SMP systems?
+	  -- Mike
+
+	* Minor change to the SCO error map.
+	  -- Mike
+
+
+Fri Jul 26 09:13:43 GMT/BST 1996
+
+	* Updated README and RELEASE
+	  -- Mike
+
+	* Merged Sparc patches from:
+		Miguel de Icaza <miguel@roxanne.nuclecu.unam.mx>
+	  -- Mike
+
+
+Thu Jul  4 12:24:06 GMT/BST 1996
+
+	* The default is now *not* to build a versioned module. I got
+	  too many questions about why it wouldn't compile.
+	  -- Mike
+
+	* Fix to binfmt_xout.c when Xenix 286 is emulation is not
+	  configured.
+	  -- Mike
+
+
+Fri Jun 14 13:36:18 GMT/BST 1996
+
+	* Added code to explicitly fail the SCO LD?MAP ioctls used
+	  for channel mapping.
+	  -- Mike
+
+
+Thu Jun  6 17:21:00 GMT/BST 1996
+
+	* Cleaned up Stephans SCO tape ioctls and added the
+	  corresponding SVR4 versions (untested).
+	  -- Mike
+
+
+Wed Jun  5 10:47:24 GMT/BST 1996
+
+	* Rewritten the Xenix locking() syscall. The previous one
+	  was crap.
+	  -- Mike
+
+	* Change the read on directory emulation to fold long inodes
+	  to shorts in the same way as stat and getdents. This may
+	  help old programs that use stat and read to do a getcwd
+	  rather than a stat and getdents.
+	  -- Mike
+
+	* Use __get_free_page instead of get_free_page in getdents
+	  since we don't need the buffer cleared initially (I think).
+	  -- Mike
+
+
+Sat Jun  1 09:50:30 MET DST 1996
+        * Added some tape ioctrls for SCO to iBCSemul/ioctl.c.
+          -- Stephan
+
+
+Fri May 31 08:44:51 GMT/BST 1996
+
+	* Move bsdioctl.c to the main group of source files from
+	  than the BSD specifics. Just about everything else has
+	  BSD style sgtty stuff and some seemingly modern code
+	  actually depends on it (e.g. ISC SVR4 telnet)!
+	  -- Mike
+
+	* Add CONFIG option to build a versioned module.
+	  -- Mike
+
+	* Install the modules in /lib/modules/`uname -r`/misc for
+	  compatibility with the modules tools.
+	  -- Mike
+
+	* If the requested connection indications in a bind request
+	  is greater than zero do a listen() if the bind is successful.
+	  We still also do a listen() if the program selects() on
+	  a bound but unconnected stream. This may help some broken
+	  programs. It may also break some broken programs. It's
+	  debatable whether this should now be in or out.
+	  -- Mike
+
+	* The bit vector mapping used for converting vectors of
+	  signal flags had an off by one error. The signal maps
+	  themselves were also one entry short.
+	  -- Mike
+
+	* At some stage I changed the I_SETOWN STREAMS ioctl but
+	  never committed it?
+	  -- Mike
+
+
+Thu May  9 12:51:10 GMT/BST 1996
+
+	* Change to install in /lib/modules/`uname -r`/misc instead
+	  of /usr/lib/modules for compatibility with the way the
+	  modules tools have gone.
+	  -- Mike
+
+
+Thu Apr 25 12:34:06 GMT/BST 1996
+
+	* Use the CONIND_number in a T_BIND_REQ to decide whether
+	  or not we should listen() on the socket.
+	  -- Mike
+
+
+Mon Apr 22 15:42:47 GMT/BST 1996
+
+	* Added a simple loader that will attempt to pass scripts
+	  that start with ":" and things that look like simple text
+	  to /bin/sh. Hopefully this isn't going to conflict with
+	  magic for other needed formats...
+	  -- Mike
+
+
+Fri Mar 29 17:11:35 GMT/BST 1996
+
+	* Committing the all new TLI/XTI options handling. Note that
+	  TLI and XTI option handling is mutually exclusive at the
+	  moment. The default is to enable TLI options handling since
+	  that is what existing SVR3/4 systems use. I haven't found
+	  one that actually handles X/Open format (they use the
+	  TNOTSUPPORT cop out) so I don't know how the stack is
+	  told to use XTI format instead of TLI.
+	    Note that only SOL_SOCKET/* and SOL_TCP/TCP_NDELAY are
+	  known to work to any extent at the moment. Others may (or
+	  may not need mapping) but I can't find the motivation to
+	  wade through the headers and create yet another table of
+	  magic numbers. Hopefully everyone just nicked the BSD
+	  reference code...
+	  -- Mike
+
+	* Some more 1.3.7x changes related to process accounting
+	  (fork but no exec etc.).
+	  -- Mike
+
+
+Wed Mar 20 13:36:07 GMT/BST 1996
+
+	* I seem to have forgotten to add a comment about merging
+	  changes from mid 1.3.7x kernels.
+	  -- Mike
+
+
+Wed Feb 28 14:53:00 GMT/BST 1996
+
+	* Fix to shared library loader in binfmt_aout.c from kernel
+	  patch 1.3.69.
+	  -- Mike
+
+
+Wed Jan 24 09:58:34 GMT/BST 1996
+
+	* Implemented I_PEEK.
+	  -- Mike
+
+	* Changed I_NREAD to understand that control messages constitute
+	  queued data.
+	  -- Mike
+
+
+Fri Jan 19 11:57:20 GMT/BST 1996
+
+	* Make the socket level connect in timod.c happen synchronously
+	  always. Allowing the async possibility is a little harder.
+	  -- Mike
+
+
+Thu Jan 18 16:06:13 GMT/BST 1996
+
+	* Added (some of) the intial framework for option management.
+	  This is documented by X/Open but many XTI stacks don't
+	  seem to implement it. Certainly the man page for t_optmgmt
+	  in SCO OS5 says it isn't yet implemented. There do seem
+	  to be programs out there that make options requests though.
+	  Unfortunately I don't have one right now so this is currently
+	  disabled and MAY CAUSE KERNEL FAULTS. I don't know...
+	  -- Mike
+
+
+Tue Jan 16 12:35:21 GMT/BST 1996
+
+	* Added a slight change to mmap.c. The SVR4 headers describe
+	  a slight change in functionality which is specified with
+	  a special flag that is supposedly set by the C library
+	  interface. I haven't actually seen this flag set by the
+	  SVR4 dynamic loader (which is the only mmapper I've seen)
+	  and things seem to work with or without this change. It
+	  may not be necessary at all?
+	  -- Mike
+
+
+Fri Jan 12 14:56:38 GMT/BST 1996
+
+	* Remove trace flag from context() in the callmaps. SVR4's
+	  /bin/sh seems to use it but doesn't care if it fails.
+	  -- Mike
+
+	* Added the SCO OS5 SI86GETFEATURES request to sysi86(). OS5
+	  uses this to establish what "features" are available when
+	  a program starts (i.e. in crt*.o). Currently we just return
+	  the same vector as OS5 itself. I haven't found what the
+	  flags mean - but one of them indicates xstat extensions
+	  which I have added to iBCS.
+	  -- Mike
+
+	* Change .comment parsers in binfmt_coff.c and binfmt_elf.c
+	  so we only grab a single page (asking for two contiguous
+	  pages is antisocial) and then roll through the comment
+	  section in stages.
+	  -- Mike
+
+	* Fixes to binfmt_elf.c and binfmt_aout.c so they compile
+	  and load with 1.3 kernels.
+	  -- Mike
+
+
+Tue Jan  9 14:29:49 GMT/BST 1996
+
+	* Add a kludge to the TLI connect code. For some reason, under
+	  ISC SVR4, telnet seems to gve the port number in network
+	  byte order ok but the X programs give it in host byte order.
+	  One of them is wrong but presumably both work on ISC (I don't
+	  have the hardware to actually install it). We kludge around
+	  it here by checking if we are SVR4, AF_INET, port 6000 (host
+	  order) and, if so, change it to port 6000 (network order).
+	  This will break anything that wants to make an outgoing
+	  call to port 28695. There are probably other things that
+	  expect incorrect port numbers to work but there seems to
+	  be no easy solution here.
+	  -- Mike
+
+
+Fri Jan  5 13:34:43 GMT/BST 1996
+
+	* First draft of code to handle select/poll on transport end
+	  points correctly. This isn't well tested but should be good
+	  enough to support normal timod usage.
+	  -- Mike
+
+
+Thu Jan  4 13:52:25 GMT/BST 1996
+
+	* TLI changes to get error returns from connects correctly.
+	  -- Mike
+
+
+Wed Jan  3 17:06:07 GMT/BST 1996
+
+	* Added a manual page in the Doc directory. This is not
+	  installed by default.
+	  -- Mike
+
+	* Fixed a problem in the .comment parsers in binfmt_elf.c
+	  and binfmt_coff.c where a number of pages was passed to
+	  __get_free_pages() instead of a binary power. This has
+	  been in release versions of binfmt_coff.c for a long
+	  time but exactly one person has reported anything that
+	  might be attributable to it. Strange, since the bug should
+	  have manifested itself as insidious memory leakage and
+	  corruption...
+	  -- Mike
+
+
+Wed Jan  3 12:16:47 GMT/BST 1996
+
+	* Removed all kernel patches in the Patches directory. None
+	  should be need for kernels 1.3.50 (or earlier?) and onwards.
+	  None should be essential for 1.2.13 - although some capability
+	  is lost notably SCO OpenServer 5 ELF binaries (if the kernel
+	  ELF loader is present) and BSD a.out binaries.
+	  -- Mike
+
+	* Another fix to termio[s] ioctls to get the control character
+	  settings right for SVR4. Previously this was just copied
+	  from the SCO mapping and just never got changed.
+	  -- Mike
+
+
+Thu Dec 14 10:41:36 GMT 1995
+
+	* Added basic getpmsg/putpmsg support. It doesn't do anything
+	  with bands but we don't have anyway to use them.
+	  -- Mike
+
+
+Tue Dec 12 09:38:01 GMT 1995
+
+	* First commit of the major TLI rewrite for Eric Sixt. This
+	  should be enough for normal TCP & UDP clients. It may be
+	  sufficient for servers as well but this is untested so far.
+	  The client stuff has been tested with SCO cu, ISC telnet
+	  and custom test code down to the getmsg/putmsg level. A shared
+	  libnsl_s is also included. This has the functions needed for
+	  clients but lacks some needed for servers currently. It has
+	  been tested on a real SCO system. It could be done better
+	  (and should be) but for now we are interested in making existing
+	  programs work rather than handling all the error conditions
+	  by the book. The library uses SVR3 shared library tools and
+	  needs to be built on an SVR3 system (I used SCO).
+	    Included is a rewrite of the /dev/spx kludging (the old didn't
+	  work if TLI was enabled). This now allows connections to other
+	  than /tmp/.X11-unix/X0 (if configured) so you can run multiple
+	  X servers on the VCs and display SCO X programs on all of them.
+	    The major/minor numbers used for the emulation devices have
+	  (necessarily) changed. The top level Makefile will (re)create
+	  them on a "make install" or "make devices".
+	    Oh yeah, I built stubs for other libraries as well (specifically
+	  SCO/SecureWare protlib_s) but don't expect it to have any real
+	  support. If programs _really_ need stuff from there they are
+	  like to have reduced or completely broken functionality on
+	  Linux!
+	    The script I used to generate the skeleton APIs for the
+	  shared libraries is libs/mkltab if anyone feels the urge to
+	  look at other libraries...
+	  -- Mike
+
+	* Removed the old quota compile option. It isn't compatible with
+	  the quota stuff in 1.3.46 and would only cause confusion. This
+	  means you can't use iBCS if you have the old quota patches
+	  in a pre-1.3.46 kernel. Tough :-).
+	  -- Mike
+
+
+Mon Dec 11 15:14:46 GMT 1995
+
+	* Map I_SETSIG/I_GETSIG to FIOSETOWN/FIOGETOWN and pray...
+	  -- Mike
+
+	* Fixed possible memory leak in COFF & ELF personality recognition
+	  when the offset/size of the .comments section is invalid. This
+	  could leak when the .comments section exists but is zero bytes
+	  long I think.
+	  -- Mike
+
+
+Wed Dec  6 11:31:27 GMT 1995
+
+	* A stat of a file must give an inode that matches what we get
+	  from a read of the directory since code that figures out cwd
+	  needs the inodes to match. Mind you, if there are several inode
+	  numbers greater than 65534 in the directory we are going to get
+	  some strange paths. I don't know if this is fixable properly at
+	  all?
+	  -- Mike
+
+	* Yes it is. We just mask off the high word to get the short
+	  inode number for the stat structure.
+	  -- Mike
+
+
+Thu Nov 30 16:21:32 GMT 1995
+
+	* Fix the SVR4 additions to the V7 terminal ioctls. Add handling
+	  of TIOC[GS]ETD. Have TIOCL[GS]ET trivially succeed (I can't
+	  find the documentation for the arguments).
+	  -- Mike
+
+
+Wed Nov 29 12:57:42 GMT 1995
+
+	* Changed the guesswork svr4_waitsys to implement the correct
+	  waitid syscall.
+	  -- Mike
+
+	* Enable the i486-linuxaout option in x286emul/Makefile by
+	  default. There seem to be significant numbers of people
+	  using ELF compilers now. This may be a mistake...
+	  -- Mike
+
+	* Fixes to sigsuspend and sigpause in signal.c. The previous
+	  invocations of the Linux sigsuspend syscall were wrong and
+	  liable to lead to random freeze ups of programs which used
+	  sigsuspend() or sigpause().
+	  -- Mike
+
+
+Fri Nov 24 11:03:01 GMT 1995
+
+	* Interactive SVR4 seems to be overloading the BSD termio
+	  ioctls with its own.
+	  -- Mike
+
+	* The SVR4 procid subcodes don't match the SCO ones. Or, at
+	  least, I seem to remember I got the orignal set from SCO
+	  and UnixWare and Interactive SVR4 are different (but match
+	  each other).
+	  -- Mike
+
+
+Thu Nov 23 17:21:56 GMT 1995
+
+	* Interactive SVR4's /bin/sh calls access(..., 011) but Linux
+	  returns EINVAL if the access mode has any other bits than
+	  007 set. So we have to wrap it and mask it :-(.
+	  -- Mike
+
+
+Wed Nov 22 10:11:49 GMT 1995
+
+	* Change to binfmt_elf.c to set total_vm value introduced in
+	  kernel 1.3.43.
+	  -- Mike
+
+
+Thu Nov 16 15:02:58 GMT 1995
+
+	* Added support for SCO OpenServer 5 binaries using .comment
+	  section parsing as with COFF.
+	    Built a BSD capable a.out loader as part of iBCS.
+	    The iBCS ELF loader is only used for recognised (using
+	  .comments) binaries if the standard ELF loader is configured
+	  in the kernel iBCS is built against. If the ELF loader is
+	  not configured in the kernel iBCS is built against the iBCS
+	  ELF loader is used for all ELF binaries. This prevents the
+	  iBCS module from becoming un-unloadable on ELF based Linux
+	  systems.
+	    Similarly the iBCS a.out loader tries to avoid dealing
+	  with anything other than BSD binaries for the same reasons.
+	    This requires a kernel 1.3.42 or greater to allow iBCS
+	  to insert its loaders into the list before the standard
+	  kernel ones. Kernels 1.3.39(~) to 1.3.41 have some support
+	  but there are bugs which will likely prevent you running
+	  *anything* as soon as iBCS is loaded. Mea culpa. Tough.
+	  -- Mike
+
+
+Thu Nov 16 11:00:08 GMT 1995
+
+	* Minor clean up in binfmt_coff.c and fix a minor bug in
+	  parse_comments that caused it to miss checking a string
+	  if there was a zero length string in among.
+	  -- Mike
+
+
+Fri Nov 10 12:22:05 GMT 1995
+
+	* Changes for latest module bogosities (~1.3.38). We need to
+	  define __NO_VERSION__ to avoid linux/module.h putting
+	  a kernel_version in *every* damn file.
+	  -- Mike
+
+
+Tue Nov  7 10:55:05 GMT 1995
+
+	* When stealing temp space from the stack we have to actually
+	  move esp down and then restore it as the 1.3.x kernels add
+	  a check to trap out of bounds stack accesses. This is not
+	  tested but I think it only affects the TLI emulation code
+	  which is disabled by default.
+	  -- Mike
+
+
+Mon Oct  9 11:22:29 BST 1995
+
+	* Use kernel readv/writev if available.
+	  -- Mike
+
+
+Thu Sep 14 12:21:48 BST 1995
+
+	* Changed references to current->sigaction to allow for the
+	  changes in kernel patch 1.3.26 which allow sharing of signal
+	  state between clone processes.
+	  -- Mike
+
+
+Mon Sep  4 10:04:22 BST 1995
+	  Originally: Wed Aug  2 09:57:56 GMT 1995
+
+	* Removed Xenix interrupt bug, created wait() workaround
+	  for INFORMIX-SQL and built the locking() to fcntl()
+	  mapping.
+	  -- Peter <polte@bbtt.com>
+
+
+Wed Aug 30 09:19:54 BST 1995
+
+	* Merged kernel patch for binfmt_elf.c from 1.3.21 which sets
+	  EDX to zero on process start up. See the comment in the code
+	  for reasons.
+	  -- Mike
+
+
+Tue Aug 29 08:44:50 BST 1995
+
+	* Workaround. Local X won't work because a putmsg occurs
+	  after we have already swapped the open descriptor for a
+	  Unix domain socket. We either need to peek at socket
+	  internals or actually implement the messages for passing
+	  file descriptors. This quick fix enables local X connections
+	  if we build without XTI support.
+	  -- Mike
+
+
+Tue Aug  8 11:36:41 BST 1995
+
+	* Fix streams kludging so local X works again (should do
+	  anyway - it's untested as yet due to hard disk collapse.
+	  Hopefully someone will tell me if it doesn't work.)
+	  -- Mike
+
+
+Mon Jul 31 13:25:58 BST 1995
+
+	* Changes to allow compilation in the presence of a kernel
+	  built with the quota patches.
+	  -- Dimitrios Mpougoulias <dbougo@leon.nrcps.ariadne-t.gr>
+
+
+Tue Jul 18 09:01:53 BST 1995
+
+	* Fixed timod getinfo ioctl. This functionality should move
+	  into the message handling as bind has.
+	  -- Mike
+
+
+Mon Jul 17 10:16:43 BST 1995
+
+	* Added handling of BSD-ish sgtty ioctls. For some reason the
+	  SVR4 network programs such as telnet have been modified to
+	  pushd the ttold STREAMS modules and use sgtty calls instead
+	  of simply using termio[s]. Don't blame me! :-)
+	  -- Mike
+
+	* Restructuring of timod.c complete. Timod ioctls now use
+	  message routines to avoid duplicating code.
+	  -- Mike
+
+
+Wed Jul 12 14:44:30 BST 1995
+
+	* Made debug output in binfmt_coff.c less verbose. We only
+	  really care about matched comment strings. If we dump them
+	  all here we overrun the kernel message buffer and miss
+	  interesting stuff when the program actually starts running.
+	  -- Mike
+
+	* Changed __get_free_pages in binfmt_coff.c to give the extra
+	  argument required in 1.3 kernels.
+	  -- Mike
+
+
+Tue Jul  4 11:48:27 BST 1995
+
+	* Restructure timod.c ready to rewrite timod_ioctl to use
+	  putmsg/getmsg rather than reimplementing the same message
+	  protocol again.
+	  -- Mike
+
+
+Mon Jul  3 13:41:49 BST 1995
+
+	* Initial TLI support for outgoing TCP and UDP. Merged BSD/Wyse
+	  socket ioctl handling with the socksys handler. Fixed (some)
+	  bugs in poll() emulation. Devices in /dev/inet have changed
+	  to support TLI access. See README for details.
+	  -- Mike
+
+
+Tue Jun 27 09:00:02 BST 1995
+
+	* Don't export symbols from iBCS. I'm not sure when register_symtab
+	  was introduced so we only drop our symbol table in 1.3
+	  and later.
+	  -- Mike
+
+	* Added missing brackets in binfmt_elf.c as per kernel
+	  patch 1.3.4.
+	  -- Mike
+
+
+Thu Jun 22 13:09:49 BST 1995
+
+	* Big step forward with TLI. I now seem to understand what is
+	  happening when and have enough to do the initial open and
+	  get info requests. This may one day actually work...
+	  -- Mike
+
+	* Trap EUC ioctls and return EINVAL. We don't do EUC :-).
+	  -- Mike
+
+	* Changes for the 1.3 development kernel. This compiles but is
+	  as yet untested. It still seems ok with 1.2.10.
+	  -- Mike
+
+
+Wed Jun 14 09:15:39 BST 1995
+
+	* Added Eric's protection mapping fixes to binfmt_elf.c
+	  from 1.2.10.
+	  -- Mike
+
+
+Fri Jun  9 12:31:53 BST 1995
+
+	* Linux can't stat unmounted filesystems but SCO can (by
+	  specifying the pathname/fd of a block device and the
+	  filesystem type. Linux will just stat the filesystem
+	  that the device node is on (i.e. the root filesystem).
+	  There isn't much we can do about it. I just lie and
+	  claim there is 100MB free of 1GB. I hope this won't
+	  cause too much grief...
+	  -- Mike
+
+
+Thu May 18 12:06:50 BST 1995
+
+	* When trying to get an IP domain name don't try the utsname
+	  domainname if it is "(none)". If we get that far we have to
+	  give in and return a blank domain name.
+	  -- Mike
+
+
+Wed May 17 10:15:42 BST 1995
+
+	* Recheck the socket functions when accept returns a new socket.
+	  This is pedantic at this stage since we must have had a
+	  socket initially and the current kernel code isn't likely
+	  to handle removal and reloading of in use modules. iBCS
+	  can handle this happening to it though :-).
+	  -- Mike
+
+	* Fix timod faking to correctly return an error if given an
+	  invalid file descriptor rather than trying to dereference
+	  a null pointer in kernel mode.
+	  -- Mike
+
+
+Tue Apr 25 11:35:43 BST 1995
+
+	* If nap() is given a zero timeout return immediately rather
+	  than blocking indefinitely. Ensure that SIGALRM is not ignored
+	  during the pause or we never get woken up by the timeout.
+	  -- Mike
+
+
+Mon Apr 24 09:21:30 BST 1995
+
+	* Various documentation updates from Eric.
+	  -- Mike
+
+
+Fri Apr 21 14:34:25 BST 1995
+
+	* Fixes to IPC. Now it really *should* work...
+	  -- Mike
+
+
+Thu Apr 13 14:03:45 BST 1995
+
+	* Tidy up documentation ready for new release.
+	  -- Mike
+
+
+Wed Apr 12 11:07:52 BST 1995
+
+	* Moved to an ELF development system with a GCC 2.6.4 snapshot.
+	  This pointed out a few signed/unsigned mismatches so I
+	  fixed them. We also have to ensure that x286emul is built
+	  as a QMAGIC a.out because it won't work any other way. It
+	  isn't likely to work any other way unless someone pays for
+	  for it to be done - it isn't what you might call a "sexy"
+	  project...
+	  -- Mike
+
+
+Wed Apr 12 08:53:22 BST 1995
+
+	* Added the kernel patch to handle statically linked SVR4 ELF
+	  binaries to the Patches directory since it doesn't seem to
+	  have made any of the 1.2.x patches yet.
+	  -- Mike
+
+
+Tue Mar 28 09:55:38 BST 1995
+
+	* Made the ISC specific stuff optional via CONFIG.
+	  -- Mike
+
+	* 1.	INTERACTIVE UNIX signal numbers are different from IBCS2.
+		I added new signalmaps and exec_domains.
+	  2.	setpgrp does not deattach the controlling terminal.
+		Try the setpgrp test program included here after the patch
+		on real SCO or xxxx and Linux/IBCS2.
+	  3.	sigset behavior is incorrect. Test program also included.
+		Short description: signal handlers registered whith sigset
+		should run with the signal blocked, and after return
+		the handler must be restored, so sa_flags = 0
+		is the correct setting.
+		Calling sigset should remove the signal from the
+		blocked set.
+	  -- Remete Gabor <rg@tomx.elte.hu>
+
+
+Fri Mar 24 10:20:57 GMT 1995
+
+	* Set the fragment size to zero for [f]statfs() just to be
+	  pedantic (SCO does this).
+	  -- Mike
+
+
+Tue Mar 21 10:24:14 GMT 1995
+
+	* Fixes to 286 overlay and x.out loader by Don Camp
+	  <don@funsoft.com>.
+	  -- Mike
+
+	* New code for SVR4 {get,set}groups since SVR4 uses longs
+	  for gids whereas Linux uses shorts.
+	  -- Mike
+
+
+Mon Mar 20 17:06:23 GMT 1995
+
+	* Added code for waitsys(). This is guesswork at this stage
+	  but appears sufficient for ISC 4.0 ksh to do something
+	  reasonable in the simplest case.
+	  -- Mike
+
+
+Tue Mar 14 09:44:13 GMT 1995
+
+	* Initial implementation of ptrace. This allows programs
+	  (SCO and Wyse V/386 programs) to access a process'
+	  registers but actual tracing semantics will be difficult
+	  to make functional.
+	  -- Mike
+
+	* Alter emulate return to allow return of numbers > 2^^31
+	  which don't fall in the error code space.
+	  -- Mike
+
+	* Added signal mapping to wait() syscalls.
+	  -- Mike
+
+	* Updated the main README with the vger mailing list details
+	  and a few other tidy ups.
+	  -- Mike
+
+
+Thu Mar  9 10:10:53 GMT 1995
+
+	* Added a load more system calls to the SVR4 tables (these
+	  match UnixWare at least I think). Some of these may work,
+	  some are just marked to shut up run time warnings.
+	  -- Mike
+
+	* Increased the size of the buffer used for parsing comment
+	  sections in binfmt_coff.c to 8k (from 1k). There are
+	  programs out there that need it.
+	  -- Mike
+
+
+Tue Mar  7 16:12:36 GMT 1995
+
+	* More XLI/TLI changes - mostly fixes.
+	  -- Mike
+
+	* Added basic handling of the termiox extension used by SVR4
+	  to give access to hardware flow control. Only RTS & CTS
+	  or nothing is allowed because that's all Linux does. The
+	  same comments as below apply to the status of this.
+	  -- Mike
+
+	* Rework ioctl handling for termios. SCO uses short in a termios
+	  structure, SVR4 uses longs. The bit shuffling used for SVR4 is
+	  the same as for SCO - there are known to be some slight
+	  differences but these are not believed to be critical for
+	  most things. A large amount of guesswork went in to this.
+	  One day I may be able to test it...
+	  -- Mike
+
+
+Mon Mar  6 12:31:05 GMT 1995
+
+	* Added a -DMODULE to iBCSemul/Makefile to make new style kernel
+	  modules work.
+	  -- Mike
+
+
+Fri Mar  3 15:04:14 GMT 1995
+
+	* Patches from Eric. (Use Eric's [f]statvfs instead of mine).
+	  -- Mike
+
+
+Thu Mar  2 11:46:03 GMT 1995
+
+	* Fixed a silly in the handling of SO_IMASOCKET and SO_PROTOTYPE
+	  plus added a check on the given buffer length.
+	  -- Mike
+
+	* Fixed a silly in the sockopt.inc options mapping.
+	  -- Mike
+
+
+Wed Mar  1 14:20:06 GMT 1995
+
+	* Added SVR4 console keyboard mapping and termcap/terminfo
+	  options to the PROD.Patches directory.
+	  -- Mike
+
+
+Mon Feb 27 13:30:17 GMT 1995
+
+	* Added simpleminded implementation of [f]statvfs().
+	  -- Mike
+
+	* [f]statfs() now respects the length argument to allow for
+	  older/smartass code which uses a smaller buffer size.
+	  -- Mike
+
+
+Fri Feb 17 10:33:23 GMT 1995
+
+	* More tidy up, a little more work on TLI/XTI (still nowhere
+	  near usable), fixed the signal debugging messages so it
+	  makes more sense.
+	  -- Mike
+
+
+Thu Feb  2 12:45:25 GMT 1995
+
+	* Changed the BSD termio ioctl handler to recognise the fact
+	  that some provide V7 compatibility and may be invoked from
+	  non-BSD binaries - possibly without BSD size encoding.
+	  -- Mike
+
+	* Changes for 1.1.88. More definitions moved around in the
+	  Linux header files :-).
+	  -- Mike
+
+
+Fri Jan 27 10:12:51 GMT 1995
+
+	* Also mapped new Linux SIGIO to iBCS SIGIO and changed Linux
+	  SIGURG to map to SIGUSR1 as documented in SCO's TCP/IP
+	  programmer's guide. Is SVR4 the same? How badly do we care?
+	  -- Mike
+
+	* Had to add a new personality for Xenix binaries since they
+	  have a different number for SIGPOLL - sigh...
+	  -- Mike
+
+
+Mon Jan 23 15:34:01 GMT 1995
+
+	* Changes to includes for 1.1.84.
+	  -- Mike
+
+	* Change to binfmt_elf.c from kernel patch 1.1.84.
+	  -- Mike
+
+
+Tue Jan 17 17:10:25 GMT 1995
+
+	* Added tracing of argument and environment vectors passed
+	  to exec().
+	  -- Mike
+
+
+Mon Jan 16 11:34:58 GMT 1995
+
+	* Change socksys.c for 1.1.81. There doesn't seem to be a
+	  convenient define to test but I intended to roll out
+	  most of the "magic" define testing for 1.2 to clean
+	  things up.
+	  -- Mike
+
+	* Ensure the segment registers are correctly set up when we
+	  exec a new program - the LDT we may have been using before
+	  no longer exists.
+	  -- Mike
+
+
+Fri Jan  6 11:32:52 GMT 1995
+
+	* Fixed a problem where the Xenix 286 emultor wasn't getting
+	  the correct return and error codes from lcall7s.
+	  -- Mike
+
+	* Added support for exec() in the Xenix 286 emulator.
+	  -- Mike
+
+	* Made the spin-before-launch trap in binfmt_xout.c settable
+	  via a trace option, "xout-block". This is used to attach
+	  gdb to a 286 process to debug the emulator.
+	  -- Mike
+
+	* Fixed a problem with binfmt_xout.c setting the wrong intial
+	  brk value for impure segmented binaries. The checks for brk
+	  collisions with mapped space were failing brk changes. Before
+	  the brk checks were introduced I image we simply trashed
+	  text or data...
+	  -- Mike
+
+
+Thu Jan  5 11:21:51 GMT 1995
+
+	* Added some debug to the STREAMS I_PUSH and I_POP. Also made
+	  them succeed without actually doing anything. We may be able
+	  to work round some instances of STREAMS usage one day...
+	  -- Mike
+
+
+Wed Jan  4 11:17:14 GMT 1995
+
+	* Change yesterday's mkdir to use getname()/putname() to
+	  fetch the pathname from user space. I hadn't realised
+	  these were already in ksyms.c (although how long have they
+	  been there? This breaks compatibility with older versions
+	  of the kernel I guess).
+	  -- Mike
+
+	* Implement the NIOC ioctls for getting file handles since
+	  Oracle's TCP server seems to be wanting to do this for some
+	  reason (why???). This is a simple implementation that simply
+	  fills in the device number of the filesystem and the inode
+	  number of the file. This seems to agree with what SCO is
+	  doing. I don't know what the "exported" fields are or should be.
+	  -- Mike
+
+
+Tue Jan  3 14:31:13 GMT 1995
+
+	* POSIX says that a pathname ending with a '/' means the current
+	  directory whereas SYSV drops the trailing slash. This is only
+	  a problem with mkdir() I think.
+	  -- Mike
+
+
+Fri Dec 16 16:25:44 GMT 1994
+
+	* Added basic support for Wyse V/386 MPX syslocal().
+	  -- Mike
+
+
+Fri Dec  9 09:14:04 GMT 1994
+
+	* Changed eaccess() again. We should always set the uid/gid
+	  rather than fsuid/fsgid since the Linux access() call is
+	  getting fsuid/fsgid from the current uid/gid.
+	  -- Mike
+
+	* Don't bother trying to read x.out segments which have no
+	  data in the executable.
+	  -- Mike
+
+
+Thu Dec  8 11:51:06 GMT 1994
+
+	* Only include <linux/segment.h> if <asm/segment.h> hasn't
+	  defined KERNEL_DS. The header in the linux subdirectory
+	  was obsoleted in 1.1.69.
+	  -- Mike
+
+
+Fri Dec  2 13:50:03 GMT 1994
+
+	* Force QMAGIC format when building x286emul.
+	  -- Mike
+
+	* Patches for 1.1.69.
+	  -- Mike
+
+
+Thu Dec  1 13:50:37 GMT 1994
+
+	* Binfmt_xout.c now checks the trace flag to see if debug messages
+	  should be produced. Trace now has an "xout" option. Trace is
+	  now a Linux binary which uses a personality() syscall to enable
+	  emulation so the iBCS trace syscall becomes accessible.
+	  -- Mike
+
+	* Changed binfmt_xout.c to use 0x1020 as the entry point for
+	  the x286emul kludge overlay. This is the expected value
+	  for a QMAGIC binary which is the default with the newest
+	  compiler. Really I think uselib() should return something
+	  useful but I haven't decided what.
+	  -- Mike
+
+	* Made the schedule() trap (so gdb can be attached before the
+	  process starts running) in binfmt_xout.c a CONFIG option
+	  controlled by the XOUT_TRACE setting.
+	  -- Mike
+
+	* Moved the configuration for the optional items out of Makefile
+	  and into CONFIG.
+	  -- Mike
+
+
+Wed Nov 30 17:08:05 GMT 1994
+
+	* Fixed a nasty bug in binfmt_coff.c where an extra page was
+	  being allocated in the bss causing brk() checks in 1.1.64
+	  and later to fail _in_certain_circumstances_.
+	  -- Mike
+
+
+Wed Nov 30 13:58:46 GMT 1994
+
+	* Added support for unpacking ioctls passed via the STREAMS
+	  interface and forwarding them to the file descriptor. With
+	  a slight change to socksys so that devices with minor 2 get
+	  an anonymous dgram socket immediately they are opened this
+	  allows many more network programs to work. Thanks to an old
+	  piece of code from Chip Rosenthal for revealing how it all
+	  worked - it isn't in the documentation :-).
+	  -- Mike
+
+
+Wed Nov 30 11:27:56 GMT 1994
+
+	* Fixed handling of brk and BSD sbrk so error returns are
+	  handled correctly.
+
+
+Mon Nov 28 10:48:25 GMT 1994
+
+	* When doing an IPC_STAT on a semaphore force the semaphore
+	  number to be zero as the kernel code erroneously checks
+	  it.
+	  -- Mike
+
+
+Fri Nov 25 14:26:41 GMT 1994
+
+	* Massive rework of ipc.c. The previous one was buggy as hell.
+	  This one works with all the demo programs from the Wyse V/386
+	  IPC documentation. Hopefully someone is going to test it with
+	  some *real* applications!
+	  -- Mike
+
+
+Tue Nov 22 09:11:46 GMT 1994
+
+	* Change the TTYDEVTYPE ioctl to say we on a pseudo terminal
+	  rather than a console. Anything calling this is likely to
+	  want to try fancy stuff like mapping the console memory
+	  and playing with I/O ports if it thinks we are on a console.
+	  -- Mike
+
+
+Tue Nov 22 09:07:04 GMT 1994
+
+	* Allow direct usage of 57600 and 115200 serial speeds from
+	  the BSD domain with kernels 1.1.65 and later.
+	  The mask-and-merge for iBCS<->Linux termios should be checked
+	  as we tend to try and preserve unmappable bits where there
+	  is no other conflict. In 99% of cases we won't see a problem
+	  though...
+	  -- Mike
+
+
+Mon Nov 21 10:05:19 GMT 1994
+
+	* Slight change to previous patch. Confusion over which struct
+	  size we should be using for the verify_area plus we need to
+	  do a VERIFY_WRITE as we will rewrite the data before returning.
+	  -- Mike
+
+	* Changes to ipc.c for reading structures from user space.
+	  -- Roberto Bagnara <bagnara@di.unipi.it>
+
+
+Thu Nov 17 15:24:23 GMT 1994
+
+	* Some of the unused KD ioctls were removed from Linux 1.1.64
+	  (or was it 63?). Changed vtkd.c accordingly.
+	  -- Mike
+
+
+Fri Nov 11 14:15:09 GMT 1994
+
+	* Moved the x286emul overlay to /usr/lib instead of /lib. There
+	  is no real need for this to be on the root filesystem.
+	  -- Mike
+
+
+Mon Nov  7 13:51:55 GMT 1994
+
+	* Added a version of the BSD exec.c patch for Linux 1.1.62.
+	  -- Mike
+
+	* Extended SCO keyboard mapping for new kbd.
+	  -- Mike
+
+
+Tue Nov  1 10:57:18 GMT 1994
+
+	* Changed the personality test in the BSD kernel patch. Apparently
+	  FreeBSD uses a machtype of 134 so it's safer to test for Linux
+	  rather than BSD.
+	  -- Mike
+
+
+Fri Oct 28 11:25:43 GMT 1994
+
+	* General clean up of the configuration options in the Makefile
+	  and elsewhere. It is now possible to choose which loaders are
+	  included and whether or not BSD or Xenix 286 emulation is
+	  required.
+	  -- Mike
+
+	* Added the x286emul overlay library. This is still very alpha
+	  but SCO's /bin/masm seems to do the things expected of it :-).
+	  -- Mike
+
+
+Wed Oct  5 17:00:13 BST 1994
+
+	* Fleshed out the F_CHSIZE and F_RDCHK fcntls. I still don't
+	  know if these are ever used from the user layer.
+	  -- Mike
+
+
+Tue Oct  4 13:17:32 BST 1994
+
+	* Fixed the BSD termios mappings. This _looks_ ok from the
+	  point of view of the NetBSD stty.
+	  -- Mike
+
+
+Fri Sep 23 11:08:31 BST 1994
+
+	* Add SCO ODT version of CorelDraw to COMPAT file.
+	  -- Doug Ledford
+
+
+Thu Sep 22 09:25:04 BST 1994
+
+	* Added the phone numbers of McGraw Hill's order desk to the
+	  README file.
+	  -- Mike
+
+	* chsize() was causing a segment error. The callmap entry punted
+	  to a Linux system call but the argument count was not negative
+	  resulting in a call to a bad function pointer.
+	  -- Mike
+
+	* Linux doesn't have the l_sysid field in struct flock so we need
+	  to slide the l_pid field down a word after doing a locking
+	  fcntl.
+	  -- Mike
+
+
+Tue Sep 20 10:31:01 BST 1994
+
+	* Added a simplistic implementation of writev since BSD seems
+	  so keen to use it as much as possible.
+	  -- Mike
+
+	* Fixed the x.out loader (mostly). This requires a minor patch
+	  to the kernel. Expect this to be put in to the kernel itself
+	  sometime after 1.1.51. Segment support is still buggy and
+	  therefore disabled. If programs assume they know what segments
+	  exist it they are broken anyway!
+	  -- Mike
+
+
+Wed Sep 14 11:24:18 BST 1994
+
+	* Added extra fcntl code 14 (used by SVR4 for GETLCK).
+	  -- Mike
+
+
+Tue Sep  6 10:58:49 BST 1994
+
+	* Added setting of fsuid/fsgid to the loaders and changed the
+	  eaccess() function in xnx.c to flip fsuid/fsgid rather than
+	  uid/gid. If you were having problems with setuid/setgid iBCS
+	  binaries this is likely to help.
+	  -- Mike
+
+
+Mon Sep  5 15:07:06 BST 1994
+
+	* Fixed the bad initialisation of howcnv in signal.c.
+	  -- Mike
+
+
+Fri Sep  2 11:01:26 BST 1994
+
+	* Added a little program to the Tools subdirectory which will
+	  restamp old binaries with the Linux machine type rather than
+	  zero which is used by BSD. Once this is done you can reliably
+	  distinguish between BSD and Linux binaries (the current Linux
+	  linker will set the correct machine type on all new binaries).
+	  -- Mike
+
+	* Updated the BSD patch.
+	  -- Mike
+
+	* Changed binfmt_coff to avoid passing meaningless MAP_DENYWRITE
+	  and MAP_EXECUTABLE flags to mmap when we are not actually
+	  mapping from a file. It would probably never be a problem...
+	  -- Mike
+
+
+Tue Aug 23 17:21:45 BST 1994
+
+	* Added my device trace stub in case anyone needs to investigate
+	  and emulate some special device.
+	  -- Mike
+
+
+Wed Aug 17 14:06:34 BST 1994
+
+	* Added an extern definition of the formats list needed by
+	  the 1.0.x hooks. Presumably this went AWOL at some stage?
+	  -- Mike
+
+
+Fri Aug 12 09:52:38 BST 1994
+
+	* Slight change to the socksys major allocation. Removed
+	  redundant error message.
+	  -- Mike
+
+
+Wed Aug 10 08:57:32 BST 1994
+
+	* Added the spelling corrections from the 1.1.42 kernel patch.
+	  -- Mike
+
+
+Fri Aug  5 10:05:14 BST 1994
+
+	* Added Scott Michel's SCO multiscreen patches.
+	  -- Mike
+
+	* More changes to loaders for latest kernel changes.
+	  -- Mike
+
+
+Wed Jul 27 10:59:14 BST 1994
+
+	* Changes for 1.1.36 vm/mprotect.
+	  -- Mike
+
+
+Tue Jul 26 14:20:27 BST 1994
+
+	* Tidied up the system call maps a little. ISC is now handled
+	  by the same maps as SCO.
+	  -- Mike
+
+
+Wed Jul 20 12:39:55 BST 1994
+
+	* Removed the lock.patch. This is in the latest kernels.
+	  -- Mike
+
+	* Changed the socksys/SCO utsname stuff to do the right thing
+	  if we have the hostname set to the fqdn and the domainname
+	  set to the NIS domain. If hostname is not an fqdn we assume
+	  we are using the domainname == IP domain convention.
+	  -- Mike
+
+
+Wed Jun 29 13:34:34 BST 1994
+
+	* Revised the lock.patch to fix the unlock problem and allow
+	  locks on devices. This should go to Linus (and probably has).
+	  -- Mike
+
+	* Removed the kernel 1.1.20 patch. This isn't needed as of
+	  1.1.22.
+	  -- Mike
+
+
+Mon Jun 27 09:26:24 BST 1994
+
+	* Can't use select() for nap() since the Linux select system
+	  call expects to pull its arguments from the user stack.
+	  Rewritten nap() using itimers.
+	  -- Mike
+
+	* More fixes from Eric for 1.0 compatibility.
+	  -- Mike
+
+
+Fri Jun 24 09:37:50 BST 1994
+
+	* Added a bit about time zones to the HINTS file.
+	  -- Mike
+
+	* First draft of BSD termios mapping. Still buggy. Needs
+	  work to be useful.
+	  -- Mike
+
+	* Fixed BSD getdirentries() to align dirents on long word
+	  boundaries. 'ls' now works and 'tcsh' finds and executes
+	  commands successfully.
+	  -- Mike
+
+	* ibcs_exit should be listed in callmap.inc with arg count 1
+	  not -1.
+	  -- Mike
+
+Thu Jun 23 09:48:43 BST 1994
+
+	* Lots more BSD-ish stuff. Commit now for release since there is
+	  confusion over versions at the moment.
+	  -- Mike
+
+	* List Xess MOTIF spreadsheet in COMPAT file.
+	  -- Michael K.Johnson <johnsonm@merengue.oit.unc.edu>
+
+	* When slurping in mis-aligned COFF binaries we shouldn't be
+	  aligning the file offset and virtual address to a page
+	  boundary!
+	  -- Mike
+
+	* Merged Eric's latest patches for 1.0 compatibility and Linux
+	  ELF capability. This was done by hand. I think it's perfect...
+	  -- Mike
+
+
+Wed Jun 22 14:28:38 BST 1994
+
+	* Many sigsuspend entries in the callmap had argumetn counts
+	  of 1 instead of Spl. This caused kernel faults.
+	  -- Mike
+
+	* Implemented the ioctls for the pseudo nfs device which under
+	  SCO is used to get/set the NIS domain. You need to link
+	  /dev/nfsd to /dev/socksys.
+	  -- Mike
+
+	* The socksys getdomainname() was doing the same write null to
+	  kernel space instead of user space as the wysev386 version.
+	  -- Mike
+
+
+Tue Jun 21 08:54:34 BST 1994
+
+	* Use the map_bitvec() function (added as part of the BSD changes)
+	  in signal.c. Note that there were quite a few mapping bugs in
+	  the old code. I think I got them all but few would have been
+	  triggered by my SCO and Wyse stuff.
+	  -- Mike
+
+	* Snapshot BSD stuff again ready for release.
+	  -- Mike
+
+	* binfmt_coff.c and binfmt_xout.c should be using mmap(NULL,...)
+	  instead of zeromap_page_range as this will create the vm area
+	  descriptor as well as mapping the pages. This is needed for
+	  the verify_area() in 1.1.20 which has tighter checks than
+	  previous versions.
+	  -- Mike
+
+	* Map stack region as a GROWSDOWN vm area in binfmt_elf.c
+	  -- Mike
+
+
+Fri Jun 17 16:42:59 BST 1994
+
+	* Major and on going work to add BSD support (optional - see the
+	  Makefile). I'm committing this now so I have a current tree
+	  ready for release when Linus goes to 1.1.20.
+	  -- Mike
+
+	* Wyse get{host,domain}name were using direct assignment to add
+	  a trailing null instead of put_fs_byte(). Oops...
+	  -- Mike
+
+	* Changes for execution domain support which will be in the main
+	  kernel as of 1.1.20. This allows easy registration of lcall7
+	  handlers, binary loaders etc. for different personalities.
+	  -- Mike
+
+
+Fri Jun 10 10:12:55 BST 1994
+
+	* Added patch file for kernel locking from Niklas Hallqvist
+	  <niklas@appli.se>. This (or something very similar) should
+	  end up in the kernel at some stage.
+	  -- Mike
+
+	* Merged Eric's changes for 1.0 compatibilty - or rather didn't.
+	  After playing with diff for quite a while I finally realised
+	  we'd both done exactly the same changes :-). However Eric
+	  has tested them...
+	  -- Mike
+
+	* Added Brandon's iBCS trace binary from Eric's 1.0 compatibility
+	  release.
+	  -- Mike
+
+
+Thu Jun  9 10:22:56 BST 1994
+
+	* Mapped msgsys to ibcs_msgsys in callmap.inc. It existed, we
+	  just didn't admit it before :-).
+	  -- Mike
+
+
+Tue Jun  7 08:50:34 BST 1994
+
+	* Sorted out some more ioctl stuff and added a handler for the
+	  STREAMS ioctl set. This is needed for I_NREAD (number of
+	  characters readable). Some SYSV X libraries contain implicit
+	  assumptions that the X connection is via a STREAM and use
+	  I_NREAD in preference to BSD/socket FIONREAD.
+	  -- Mike
+
+	* Oh, Jeez... The changes made for the official kernel patches
+	  completely shafted the 1.0 compatibility. I've remerged the
+	  previous code with the new code - there may still be some
+	  things that need pulling back though. At this point I don't
+	  have a 1.0 kernel tree around to test against.
+	  -- Mike
+
+	* If a COFF program is not correctly aligned disable demand
+	  paging and resort to slurping the whole lot in at start up.
+	  -- Mike
+
+	* Added missing -I../include to the Tools Makefile.
+	  -- Mike
+
+
+Fri Jun  3 11:53:21 BST 1994
+
+	* Added my virtual system tools. A virtualised SCO 3.2.4
+	  system is usable for real work for me...
+	  -- Mike
+
+	* Added the synchronous ioctl set. This conflicts with the
+	  SCO 3.2.x (x < 4) ioctl for getting the video map so it should
+	  be dependent on the file descriptor it is applied to but since
+	  we don't currently support either...
+	  -- Mike
+
+
+Thu Jun  2 17:02:26 BST 1994
+
+	* Added support for FIORDCHK ioctl. SCO says it's there for
+	  "backward compatibility" but the system programs still
+	  seem to use it (notably ksh).
+	  -- Mike
+
+
+Tue May 31 13:39:34 BST 1994
+
+	* Patches to sysfs.c for 1.0.x compatibility from Tor with
+	  some extra clean up.
+	  -- Mike
+
+
+Fri May 27 09:15:21 BST 1994
+
+	* Ensure we set up signal() handlers as SA_ONESHOT and sigaction()
+	  handlers as sticky - similar to patch from Remete Gabor.
+	  -- Mike
+
+	* Added the SCO cxenix sigaction extensions. Barely tested...
+	  -- Mike
+
+	* Added the cxenix {get,set}itimer calls discovered on SCO by
+	  Brandon. Currently these are directly mapped to the Linux
+	  syscalls. They are undocumented by SCO (as far as we know)
+	  and untested by us (for now).
+	  -- Mike
+
+
+Thu May 26 11:58:18 BST 1994
+
+	* Don't include the 0.0.0.0 to localhost address mapping if we
+	  are building for 1.1.15+. This is mapped in the kernel as of
+	  1.1.6 and since we don't support 1.1 kernels before 15...
+	  -- Mike
+
+	* Type of signal map vectors should be unsigned long not int.
+	  -- Mike
+
+	* Allow tracing to be compiled in to the COFF loader and turned
+	  on and off with the Tools/trace program.
+	  -- Mike
+
+	* Signal maps moved out to maps/signal.inc. The only special
+	  mapping that happens is for ISC which has a problem with
+	  Oracle sending SIGSTOP to its backend when SIGSTOP doesn't
+	  appear to be defined for ISC. We just map SIGSTOP to 0 so
+	  it appears to work but does nothing.
+	  -- Mike
+
+	* Changes for 1.1.15. This will not work with kernels between
+	  1.1.10 and 1.1.14 inclusive - guaranteed. It should still
+	  work with the 1.0.x series but has not been tested recently.
+	  It probably works against 1.1.0 to 1.1.13 inclusive but that
+	  is purely coincidence - you shouldn't be using old 1.1.x
+	  kernels as it's a development series.
+	  -- Mike
+
+
+Tue May 24 17:27:54 1994  Eric Youngdale  (eric@tantalus)
+
+	* binfmt_xout.c: Use linux_binfmt struct, register_binfmt,
+	  unregister_binfmt as in pl14.
+
+	* binfmt_elf.c, binfmt_xout.c: Likewise.
+
+	* signals.c: Make signals[] and lsignals[] global variables.
+
+	* ibcs/include/ibcs.h: Add prototypes for signals[] and lsignals[].
+
+
+Tue May 24 10:37:01 BST 1994
+
+	* Added map entries for the ISC personality to all the maps
+	  files. Must be more careful adding personalities.
+	  -- Mike
+
+	* Added Oracle to the COMPAT file.
+	  -- Mike
+
+	* Remember the problem with interrupting an Informix 4GL program
+	  causing it to go psycho because of I/O errors from the tty?
+	  Well, this doesn't happen with the new tty drivers in 1.1.13.
+	  I never found why it happened...
+	  -- Mike
+
+	* Noted that the 1.1.11 kernel patches are still ok with 1.1.13.
+	  -- Mike
+
+
+Mon May 23 08:50:21 BST 1994
+
+	* Mapped ISC sysconf() to the existing Xenix sysconf(). This
+	  looks right but isn't checked at all.
+	  -- Mike
+
+	* Added ISC TCSETPGRP and TCGETPGRP ioctl traps.
+	  -- Mike
+
+
+Thu May 19 09:26:34 BST 1994
+
+	* Added a bug hunting section to the README.
+	  -- Mike
+
+	* Always access the socket layer by picking up the file operations
+	  from an open socket descriptor. This removes the need for
+	  kernel socket functions to be global and should be friendlier
+	  towards a loadable socket layer one day.
+	  -- Mike
+
+
+Mon May 16 10:20:38 BST 1994
+
+	* Always access system calls via the system call table regardless
+	  of whether we are using a loadable module or linking directly
+	  to the kernel. This allows other things to be loadable too.
+	  -- Mike
+
+
+Wed May 11 13:52:12 BST 1994
+
+	* Added a tip on how to fix X font problems to the HINTS file.
+	  Other "soft" changes welcome. Does anyone read the ChangeLog?
+	  -- Mike
+
+	* Introduced the PROD.Patches directory and put the WP install
+	  fixes in there. Documented in COMPAT and README.
+	  -- Mike
+
+	* Added some hints on incompatible shell behaviour.
+	  -- Mike
+
+
+Mon May  9 11:07:52 BST 1994
+
+	* Updated the 1.1 patch file for 1.1.11.
+	  -- Mike
+
+	* Additions for Interactive 4.0
+	  -- Karl Kiniger (ki@kretz.co.at)
+
+
+Fri May  6 12:03:00 BST 1994
+
+	* Merged old sysfs.c with the new sysfs.c. The code will now
+	  work against any kernel - 1.0, 1.1, 1.1.9, 1.1.10...
+	  -- Mike
+
+
+Thu May  5 10:39:52 BST 1994
+
+	* Reworked for compatibility with 1.1.10. Kernel patches
+	  are *not* updated yet. We expect the kernel changes to go
+	  in to the official distribution any time now...
+	  -- Mike
+
+
+Tue May  3 12:03:31 BST 1994
+
+	* Joe/Brad's IPC additions.
+
+
+Fri Apr 29 10:06:10 BST 1994
+
+	* Updated the README to explain the difference between sysfs.c
+	  and sysfs.c.old
+	  -- Mike
+
+
+Wed Apr 27 11:38:52 BST 1994
+
+	* Added mapping of chsize() to ftruncate(). Implemented nap()
+	  using select().
+	  -- Mike
+
+	* Further fix to termios mapping for iexten and tostop.
+	  -- Mike
+
+	* Updated the 1.1.? patch. New ksyms.c with fewer symbols plus
+	  removed all the socket patches. Sockfunc.h is no longer
+	  required. The 1.0 patch isn't updated but the extra cruft
+	  that's in there now shouldn't be any problem.
+	  -- Mike
+
+
+Tue Apr 26 11:49:07 BST 1994
+
+	* Removed references to linux/sockfunc.h. We seem to have run
+	  out of internal socket functions to put in it finally.
+	  -- Mike
+
+	* Removed use of socki_lookup(). This just wraps some checks
+	  around inode->i_socket. We assume the socket layer is stable
+	  by now...
+	  -- Mike
+
+	* Access [gs]etsockopt via the socketcall interface.
+	  -- Mike
+
+	* If we have to use our own CFLAGS look in the include directory
+	  above in case we have been dropped in to the kernel.
+	  -- Eric
+
+	* Grab socket file operations when we create a socket rather
+	  than linking against them directly. Similar to Eric's
+	  changes but different...
+	  -- Mike
+
+
+Fri Apr 22 11:10:18 BST 1994
+
+	* The 'x' class of ioctls are back to being termios rather
+	  than termio. The problem was that the field size in iBCS
+	  termios and Linux termios is different.
+	  -- Mike
+
+	* Added iBCS <-> Linux termios mapping. This is untested and
+	  probably imperfect at this stage but nothing crashes with
+	  this code...
+	  -- Mike
+
+	* The iBCS time() syscall doesn't take an argument, the save,
+	  if any, is handled in the interface library.
+	  -- Mike
+
+	* Updated the 1.1 kernel patch to be against 1.1.8. It won't
+	  work with anything less than 1.1.8 but then if you are
+	  playing with 1.1 you should be playing with the latest...
+	  This involves a change in the way sysfs() works. If you
+	  are using 1.0 and have applications that call sysfs()
+	  (practically none do) then you need to build with sysfs.c.old.
+	  -- Mike
+
+	* The Linux kernel 1.1.8 replaces the static file_systems
+	  table with a linked list ready for loadable file systems.
+	  Naturally, I was ready for this... :-(
+	  -- Mike
+
+
+Thu Apr 21 10:34:34 BST 1994
+
+	* sysfs.c should be including linux/string.h to get the
+	  inline string functions rather than needing library
+	  functions.
+	  -- Mike
+
+	* Added code to map between Linux termio structs and SCO/iBCS
+	  termio structs. There are slight differences. Mapping needs
+	  to be done for termios structs too. Anything that uses termios
+	  at this stage is likely to ge a nasty shock!
+	  -- Mike
+
+
+Tue Apr 19 22:56:55 1994  Eric Youngdale  (eric@esp22)
+
+	* ibcs.h: Put declaration of sys_call_table outside of ifdef.
+	  (So can be compiled into kernel instead as a module).
+
+
+Tue Apr 19 10:21:17 BST 1994
+
+	* It looks as though the 'x' class of ioctls should be termio
+	  ioctls rather than termios. At least this is the case as far
+	  as SCO 3.2.4 stty appears to be concerned.
+	  -- Mike
+
+	* Avoid copying the entire lock structure backwards and forwards
+	  just to increment one field in open.c. There could be a problem
+	  here - SCO has a sysid field *before* the pid field but only
+	  if _XOPEN_SOURCE or _POSIX_SOURCE is defined at compile time.
+	  There appears to be no obvious way to know what is being used???
+	  -- Mike
+
+
+Mon Apr 18 08:49:37 BST 1994
+
+	* There appear to odd little niceties involved with SYSV which
+	  depend on system configuration and the way users do things.
+	  Added a HINTS file with known problems/workarounds.
+	  -- Mike
+
+	* Changed some annoying KERN_ERRs to KERN_DEBUGs in signal.c
+	  -- Mike
+
+	* Watch out for (mis)use of INADDR_ANY instead of localhost
+	  (primarily by syslog() code?) and replace it with the
+	  localhost address. We should perhaps do this for sendto()
+	  as well? (Eric spotted this one on CorelDraw but it's a
+	  problem with the standard libsocket.c)
+	  -- Mike
+
+	* Processes should be allowed to reduce their file size
+	  limit but only increase it if they have root privileges.
+	  -- Mike
+
+	* Fixed the bug in [f]statfs where the first two arguments
+	  to memcpt_tofs() were exchanged (spotted by Eric).
+	  -- Mike
+
+	* SCO seems to like utsys (v7_utsname) to return the same
+	  thing for sysname and nodename fields just like the SCO
+	  extended utsname structure has. The SVR4 (abi_utsname)
+	  return is unknown at this time.
+	  -- Mike
+
+	* Removed comments on IPC from README. It *is* fixed?
+	  -- Mike
+
+	* Fix IPC which was broken by syscall changes. Also fix
+	  structure mappings.
+	  -- Joseph L. Portman III <baron@hebron.connected.com>
+
+
+Thu Apr 14 11:27:24 BST 1994
+
+	* At some stage SCO managed to build some of their binaries
+	  with the copyright comment string in quotes so we have a
+	  new recognition string in the COFF loader. (Seen in uname
+	  on a 3.2.2 system).
+	  -- Mike
+
+	* If we have tracing compiled in then only give unsupported
+	  syscall messages if we are tracing the API or the syscall
+	  in question. This allows us to quieten unsupported but
+	  unimportant syscalls.
+	  -- Mike
+
+	* Comment on the IPC limitations in the README file.
+	  -- Mike
+
+	* Added implementation of xnx_pathconf(). Actually it doesn't
+	  look as if we really need it. The Microsoft C compiler seems
+	  to be misusing it anyway and doesn't even care that it gets
+	  an error.
+	  -- Mike
+
+
+Wed Apr 13 09:14:50 BST 1994
+
+	* Added handling of TIOC[GS]PGRP.
+	  -- Mike
+
+	* Added implementation of xnx_eaccess(). This is currently
+	  simpleminded because Linux access() is. My eaccess() may
+	  even be wrong.
+	  -- Mike
+
+	* When tracing signal delivery we shouldn't be clearing the
+	  signal flag after reporting it or the signal is never actually
+	  delivered. I copied the assembler from the kernel and forgot
+	  to deleted an opcode...
+	  -- Mike
+
+	* Signal 0 should have been identity mapped so kill 0 works.
+	  -- Brandon S. Allbery (kf8nh@kf8nh.ampr.org) (bsa@kf8nh.wariat.org)
+
+Tue Apr 12 14:30:25 BST 1994
+
+	* Corrected file size passed to/from setrlimit/getrlimit
+	  -- Graham Adams (gadams@ddrive.demon.co.uk)
+
+
+Tue Apr 12 11:16:45 BST 1994
+
+	* Added support for an obscure SCO extension that is used
+	  to get SCO's extended utsname information.
+	  -- Mike
+
+	* Changed ipc.c to always go via the ipc syscall rather than
+	  direct to internal functions. This should survive if ipc
+	  isn't in the kernel. It should even do sensible things if
+	  the ipc module is loaded/unloaded on us.
+	  -- Mike
+
+	* Initial changes to access system calls via sys_call_table
+	  -- Mike
+
+
+05 April 1994
+
+	* Eric's pre-release fixes.
+
+
+Wed Mar 30 22:35:28 1994  Eric Youngdale  (eric@esp22)
+
+	* ioctl.c: Change 'F' to 'f' for SVr4 FIONREAD ioctl.
+
+	* Makefile: Add svr4.c.
+
+	* svr4.c: New file (sort of - it got lost in shuffle before).
+
+	* include/ibcs/ibcs.h: Include prototypes for abi_uname.
+
+	* maps/callmap.inc: Insert abi_uname in syscall number 135.
+	Add sys_rename in slot 134 (emacs v18 requires this).
+
+
+Tue Mar 29 23:32:35 1994  Eric Youngdale  (eric@esp22)
+
+	* Makefile: Fix so that we do not need uname.  Use symbol from
+	.config instead.
+
+	* README: Update a bit.
+
+
+28 March 1994
+
+	* Preparation for release:
+	  Tidy up documentation and create CREDITS file from the old
+	  ToDo list.
+	  -- Mike
+
+
+27 March 1994
+
+	* Preparation for release:
+	  Move headers into a subdirectory.
+	  Move maps into a subdirectory.
+	  -- Mike
+
+
+25 March 1994
+
+	* Changed the COFF loader so that if the filesystem doesn't
+	  support mmap we read in the whole lot initially and let
+	  it page to swap if necessary. This is already in the x.out
+	  loader, it should go in the ELF loader too at some point.
+	  -- Mike
+
+
+24 March 1994
+
+	* Added a loader for x.out i386 small model binaries - i.e 386
+	  Xenix programs. <=286, non-small model binaries are not
+	  supported and not likely to be in the near future.
+	  -- Mike
+
+
+Wed Mar 23 23:12:54 1994  Eric Youngdale  (eric@esp22)
+
+	* Add ioctl for 0x4004667f (FIONREAD) (used by SVr4).
+
+	* map.h (map_segment.map): Make unsigned.
+
+	* hrtsys.c: New file implementing parts of the hrtsys syscall.
+
+
+02 March 1994
+
+	* Add socket value mappings. This meant a general move round
+	  to tidy things up and group map functions/tables.
+	  There is a new kernel patch in the Patches directory called
+	  net.patch which gives us access to the sock_*sockopts
+	  functions directly.
+	  -- Mike
+
+
+28 February 1994
+
+	* Implementation of poll().
+	  -- Eric
+
+
+25 February 1994
+
+	* Pedantic change to call maps so that IBCS_function contains
+	  a void * instead of a function pointer - we cast it as
+	  necessary later in emulate.c. The warnings were annoying me.
+
+	* Moved struct abi_sigaction from signal.c to abi4.h so it is
+	  available for prototype declarations. Changed prototype for
+	  abi_sigsuspend to correspond to implementation in signal.c.
+	  -- Mike
+
+	* Reversed out Eric's earlier signal patches and added new ones.
+	  -- Mike
+
+	* Updated trace code and trace control program to be useful.
+	  Control of tracing individual functions is still not there
+	  yet - perhaps another day.
+	  Default trace mode is now none (i.e. only functions with
+	  the trace flag set are traced). Use the trace program to
+	  change the trace level.
+	  -- Mike
+
+	* File modes (open/fcntl flags) are different between Linux and
+	  iBCS so we need to map between them. Open also requires this
+	  so fcntl.c is now merged with open.c. Failure to set and reset
+	  non-blocking mode was what was breaking Unipox.
+	  -- Mike
+
+	* Signal handling function changes to map to and from the Linux
+	  signal set and sigaction flags correctly.
+	  -- Eric
+
+
+24 February 1994
+
+	* Added code to the emulate() function to let us know when we
+	  are about to process a signal on exit from the syscall.
+	  -- Mike
+
+	* Implemented proctl() as a no-op. It's not really relevent
+	  under Linux.
+	  -- Mike
+
+	* Added argument count and type for eaccess()
+	  -- Mike
+
+	* Have emulate.c return -ENOSYS for unimplemented system calls
+	  rather than zero.
+	  -- Mike
+
+	* Added Eric's patches to waitpid.
+
+	* Created the ChangeLog!

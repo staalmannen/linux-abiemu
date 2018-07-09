@@ -1,0 +1,61 @@
+
+	These are leftovers from iBCS, I just removed what is already
+	done in linux-abi or isn't relevant for us.  --hch
+
+
+^Z disconnects but the next read seems to return an error instead
+of blocking? (Fixed?)
+
+SIOGIFFLAGS seems to get passed an empty string as the interface name
+(ISC ping). What is supposed to be happening?
+
+If a timod putmsg fails we should set an error status on the socket and
+return it on future calls for strict compatibility. Currently we recover
+from things such as protocol errors rather more than we should.
+
+Getmsg() - when select returns we may not be the first process to wake
+up and handle the event. So the recvfrom ought to be non-blocking (not
+possible?). If it would block we should go back to the select (unless
+the descriptor is in non-blocking mode). (DONE?)
+
+How should we go about returning TLOOK? Currently we are only working
+synchronously so it isn't essential yet. It looks like it's all handled
+in libnsl_s.
+
+The T_MORE flag on t_snd() and t_rcv() marks message boundaries. Strictly
+these should be preserved end-to-end. Possible across sockets?
+(X/Open specify that message boundaries shouldn't be relied on with TCP)
+
+Need I_SETSIG ioctl to enable SIGPOLL on available input etc. Note that
+a control message counts as input. This should interface with poll() too.
+
+getmsg() returns EINTR if a signal interrupts it but the t_*() functions
+don't seem to propogate this back to the application. Presumably they
+loop round?
+
+The SCO timod doesn't seem to pay much attention to the TI_* command
+in an ioctl but uses the T_* primitive in the message block. i.e. if
+you have T_BIND_REQ in the message but TI_GETINFO as the ioctl command
+timod will do a bind. Currently we use the TI_* by preference. This
+needs to change to avoid breaking programs that worked on SCO even
+though broken. It shouldn't be _essential_ though as all this is
+normally hidden in libnsl_s so should be consistent.
+
+Connects are currently forced synchronous. It wouldn't be too much
+to allow them to happen asynchronously but the async confirmation
+is supposed to contain the address we connected to and that is only
+available from the connection request message. Unless we save it
+somewhere or look it up from the socket. Hang on, we have getpeername()
+capabilities...
+
+There are slight semantic differences between O_NDELAY and O_NONBLOCK
+which cause different behaviour on SCO at least. For instance O_NDELAY
+does cause t_connect to work asynchronously but O_NONBLOCK doesn't.
+Under Linux O_NDELAY and O_NONBLOCK are the same. This could cause
+problems at some point I guess...
+
+Under SCO at least poll and select are different. Poll works on things
+that select can be used on but select cannot necessarily work on things
+that can be polled. Specifically you can poll a transport end point
+but not select on it. Badly written programs could block when they
+wouldn't normally.

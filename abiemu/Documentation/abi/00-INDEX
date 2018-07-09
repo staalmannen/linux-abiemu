@@ -1,0 +1,30 @@
+00-INDEX
+	- this file
+COMPAT
+	- a list of software that has run succesfull under iBCS
+CREDITS
+	- a list of people that have contributed to linux-abi or iBCS
+ChangeLog
+	- changelog of linux-abi
+ChangeLog.ibcs
+	- changelog of the iBCS project (up to 1998)
+Error.map
+	- mapping of error codes from Linux to various personalities
+HINTS
+	- FAQ-style Q&A
+Local-X
+	- help on local X interfaces
+Notes.Signal
+	- some notes on signal handling
+Personality
+	- an introduction into Linux personality support
+README.first
+	- read this first!
+Syscall.map
+	- the syscall mapping for certain personalities
+TODO.ibcs
+	- things to be done, leftovers from iBCS
+autoload.txt
+	- autoloading personality modules under Linux-ABI
+modules.txt
+	- a brief overview of the Linux-ABI modules

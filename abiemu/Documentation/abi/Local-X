@@ -1,0 +1,22 @@
+** Local X interface
+
+The local X interface is simplistic. It assumes only one local X server
+exists and assumes that the pathname of the Unix domain socket for
+local connections is always /tmp/.X11-unix/X0.
+
+  The SCO code opens both /dev/X0R and /dev/spx, writes a single byte
+to /dev/X0R, reads a message from /dev/X0R with getmsg then writes this
+message to /dev/spx with putmsg and closes /dev/X0R. This establishes
+the /dev/spx file descriptor as a connection to the X server listening
+on /dev/X0R.
+
+  We ignore all activity on the /dev/X0R device (hence it is a link to
+/dev/null), getmsg and putmsg are stubbed so don't do anything and opens
+on the /dev/spx simply replace the open inode with a socket connected
+to the X server's Unix domain socket.
+
+  At some point in the future we will implement a simple minded /dev/X*
+driver that returns some form of id via the getmsg which can then be
+passed to /dev/spx with putmsg and which will allow /dev/spx to connect
+to the relevant X server. This will only happen if someone actually
+*needs* multiple local X servers...

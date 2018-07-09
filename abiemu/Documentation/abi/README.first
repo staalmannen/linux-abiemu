@@ -1,0 +1,12 @@
+First notes on Linux-ABI documentation
+2001-March-30
+Christoph Hellwig, <hch@caldera.de>
+
+
+Please note that most files in this directory are leftovers from iBCS, which is
+dead since 1998.  Do not expect this files to uptodate or complete.
+
+I will update the files and add new onces from time to time.
+
+	--hch
+

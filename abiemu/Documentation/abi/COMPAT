@@ -1,0 +1,181 @@
+C: This file contains details of programs that have been run under
+C: Linux using the iBCS emulator. An entry here is no guarantee that
+C: the program works 100% but does indicate that the major elements
+C: of the program have been unable to exercise bugs in the emulator
+C: unless otherwise noted.
+C:
+C: An entry in this file does not necessarily indicate that the vendor
+C: or anyone else actually supports the package under Linux unless
+C: there is a specific entry to that effect.
+C:
+C: Please add to this file - new entries, other releases, amendments
+C: to existing entries etc.
+C:
+C: The layout of this file is intended to be both easy to browse and
+C: easy to parse, allowing it to be formatted into documents in the
+C: future. This hasn't happened yet though and might never happen :-).
+C:
+C: Key:
+C:	C = Comment
+C:	V = Vendor
+C:	S = Support details
+C:	O = Operating system compiled for
+C:	P = Product
+C:	R = Release(s) known to work
+C:	L = Libraries required
+C:	D = Description
+C:	N = Notes
+C:	T = Tester
+
+V: Applied Information Systems, Inc. (info@ais.com)
+O:	SCO
+P:		Xess (MOTIF Spreadsheet)
+R:		current
+L:		statically linked
+N:		A save-disabled demo is available in ftp.uu.net:/vendor/ais/
+N:		Get three files: README, gen.tar, and sco.tar.
+N:		Don't add a .Z or .gz to the end of the filenames; the files
+N:		inside are compressed.  ~300K of online documentation is in
+N:		gen.tar.
+N:		If anyone decides to actually *buy* this product, *please*
+N:		mention that you will be running it under Linux.  I promise
+N:		you that you will still get technical support (the majority
+N:		of our technical support staff run Linux at home) -- but if
+N:		enough people buy the product asking for a Linux version, my
+N:		employer will be willing to make the investment.  Pass the
+N:		word on if you want to see a native-mode, high-quality
+N:		spreadsheet for Linux as much as I do...
+N:			michaelkjohnson
+T:		Michael K.Johnson <johnsonm@merengue.oit.unc.edu>
+
+V: Corel
+O:	SCO ODT
+P:		CorelDraw! 3.0 and friends.
+R:		3.0
+N:		Requires X11, no character versions of these apps.
+N:		Everything seems to be statically linked, no extra libs
+N:		necessary.  I had a few problems with my .xmodmap file
+N:		since CorelDraw wants all of the lower function keys to
+N:		be mapped to functions in the CorelDraw program.  Uses a
+N:		networked license manager, it worked fine.  My programs
+N: 		did not install properly due to an install bug.  The dir.
+N:		that contains the washes.3fx file and others must be hand
+N:		changed to mode 777 for CorelChart to work (This from
+N:		Corel tech support).
+T:		Doug Ledford <gdl297s@cnas.smsu.edu>
+
+V: Informix
+O:	SCO
+P:		Informix SQL Standard Engine
+R:		4.00 & 5.01
+L:		/shlib/libc_s
+T:		Mike Jagdis <jaggy@purplet.demon.co.uk>
+
+V: Informix
+O:	SCO
+P:		Informix SQL Online Dynamic Server
+R:		7.20.UD5
+T:		Mike Jagdis <jaggy@purplet.demon.co.uk>
+
+P:		Informix INET
+R:		???
+N:		INET is reputed to work too but I can't remember who
+N:		said that...
+T:		???
+
+V: IXI
+O:	SCO
+P:		X.desktop
+R:		???
+L:		/shlib/libnsl_s
+N:		The version of X.desktop tested is that shipped with
+N:		Uniplex Windows. Functionality is at least enough to
+N:		support Uniplex Windows.
+T:		Mike Jagdis <jaggy@purplet.demon.co.uk>
+
+V: Oracle
+O:	Interactive
+P:		Oracle
+R:		V6
+L:		/shlib/libnsl_s
+T:		Remete Gabor <rg@tomx.elte.hu>
+
+V: Soft-Tek
+O:	SCO
+P:		Tactician Plus (character and X)
+R:		3.0
+T:		Brandon S. Allbery <bsa@kf8nh.wariat.org>
+
+V: SPSS Inc.
+O:	SCO
+P:		SPSS 5.0 for SCO UNIX
+L:		Motif, if you want to use the GUI
+D:		Statistical Package for the Social Sciences
+N:		SCO's cpio is not compatible with GNU's -- I had to dd all
+N:		floppys onto my hd and to concatenate them into one file.
+N:		I couldn't test the GUI since I had no Motif available.
+T:		Joerg Rade <jr@petz.han.de>
+
+V: Uniplex Limited
+O:	SCO
+P:		Uniplex / Uniplex Windows
+R:		7.02
+L:		statically linked (Uniplex Windows requires libnsl_s)
+N:		Uniplex Windows is implemented using a version of IXI
+N:		X.desktop. It is this that requires libnsl_s.
+T:		Mike Jagdis <jaggy@purplet.demon.co.uk>
+
+V: V-Systems, Inc.
+O:	SCO
+P:		VSI*FAX (FxServer, FxScript, FxVision) (character and X)
+R:		FxServer 2.0.19, FxScript 1.1.05, FxVision 1.0.16
+L:		Statically linked
+N:		Needs localhost in the X server's access control list
+N:		even when using a local X connection.
+N:		This has not been tested with a modem connected as I
+N:		don't have a Multitech...
+T:		Mike Jagdis <jaggy@purplet.demon.co.uk>
+
+V: ViaCrypt
+O:	SCO
+P:		ViaCrypt PGP
+R:		2.4
+T:		Mark C. Henderson <mch@sqwest.wimsey.bc.ca>
+
+V: WordPerfect Corporation
+O:	SCO
+P:		WordPerfect (character and X)
+R:		5.1
+L:		Statically linked
+N:		Installation under Linux may require changes to some of
+N:		the WP install scripts. See the PROD.Patches/WP file
+N:		for details.
+N:
+N:		WP uses a network license manager.
+N:
+N:		For some reason WP use a partition floppy device rather
+N:		than the full block device. Linux does not have this so
+N:		you need to use dd to skip the first cylinder (track?)
+N:		when loading the floppies under Linux. See the HINTS
+N:		file for details.
+N:
+N:		Fonts appear corrupt. See the HINTS file for a cure.
+T:		Mike Jagdis <jaggy@purplet.demon.co.uk>
+
+V: Z-Code Inc
+O:	SCO
+P:		Z-Mail
+R:		3.2
+L:		Statically linked - Motif based.
+N:		Installation scripts work correctly.
+N:
+N:		ZMail can use a network license manager or a license file.
+N:		Both are known to work.
+N:
+N:		ZMail is a GUI-based mail program.
+N:
+N:		You can download the binaries for ZMail via anonymous ftp
+N:			ftp@ncd.com
+N:		You will have to contact Z-Code to obtain an evaluation
+N:		license if you wish to try it out.
+T:		Eric Youngdale <eric@aib.com>
