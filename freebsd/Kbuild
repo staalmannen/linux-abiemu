@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0
+ccflags-y := -I$(src)/../include
+
+obj-m := abi_freebsd.o
+abi_freebsd-y := main.o sys.o sysctl.o signal.o

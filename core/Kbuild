@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0
+ccflags-y := -I$(src)/../include
+
+obj-m := abiemu.o
+abiemu-y := main.o syscall.o exec.o vfs.o signal.o
