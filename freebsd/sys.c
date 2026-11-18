@@ -13,6 +13,9 @@
 #include <linux/cred.h>
 #include <linux/kdev_t.h>
 #include <linux/time.h>
+#include <linux/namei.h>
+#include <linux/uuid.h>
+#include <linux/dcache.h>
 #include <asm/unistd.h>
 #include <asm/prctl.h>
 
@@ -221,6 +224,73 @@ static long freebsd_sys_closefrom(struct abi_ctx *ctx)
 	return abi_native3(ctx, __NR_close_range, ctx->args[0], ~0U, 0);
 }
 
+/* __realpathat(int fd, const char *path, char *buf, size_t size, int flags) */
+static long freebsd_sys_realpathat(struct abi_ctx *ctx)
+{
+	struct path path;
+	char *tmp, *p;
+	long err;
+
+	err = user_path_at(ctx->args[0], (const char __user *)ctx->args[1],
+			   LOOKUP_FOLLOW, &path);
+	if (err)
+		return err;
+	tmp = kmalloc(PATH_MAX, GFP_KERNEL);
+	if (!tmp) {
+		path_put(&path);
+		return -ENOMEM;
+	}
+	p = d_path(&path, tmp, PATH_MAX);
+	path_put(&path);
+	if (IS_ERR(p))
+		err = PTR_ERR(p);
+	else if (strlen(p) + 1 > ctx->args[3])
+		err = -ENAMETOOLONG;
+	else if (copy_to_user((void __user *)ctx->args[2], p, strlen(p) + 1))
+		err = -EFAULT;
+	kfree(tmp);
+	return err;
+}
+
+/* copy_file_range(infd, inoffp, outfd, outoffp, len, flags) */
+static long freebsd_sys_copy_file_range(struct abi_ctx *ctx)
+{
+	if (ctx->args[5])
+		return -EINVAL;
+	return abi_native(ctx, __NR_copy_file_range, ctx->args[0], ctx->args[1],
+			  ctx->args[2], ctx->args[3], ctx->args[4], 0);
+}
+
+/* uuidgen(struct uuid *store, int count) */
+static long freebsd_sys_uuidgen(struct abi_ctx *ctx)
+{
+	u8 __user *store = (u8 __user *)ctx->args[0];
+	int i, count = ctx->args[1];
+
+	if (count < 1 || count > 2048)
+		return -EINVAL;
+	for (i = 0; i < count; i++) {
+		u8 u[16];
+
+		generate_random_uuid(u);
+		if (copy_to_user(store + 16 * i, u, 16))
+			return -EFAULT;
+	}
+	return 0;
+}
+
+/* kenv(int action, const char *name, char *value, int len) */
+static long freebsd_sys_kenv(struct abi_ctx *ctx)
+{
+	switch ((int)ctx->args[0]) {
+	case 0:		/* KENV_GET */
+		return -ENOENT;
+	case 3:		/* KENV_DUMP: an empty environment */
+		return 0;
+	}
+	return -EPERM;
+}
+
 /*
  * Memory
  */
@@ -309,7 +379,12 @@ static long freebsd_sys_wait6(struct abi_ctx *ctx)
 	case 7:		pid = -1; break;			/* P_ALL */
 	default:	return -EINVAL;
 	}
+	if (ctx->args[5])		/* siginfo: not filled in */
+		clear_user((void __user *)ctx->args[5], 80);
+	/* struct __wrusage starts with the rusage of the child itself */
 	ctx->args[0] = pid;
+	ctx->args[1] = ctx->args[2];
+	ctx->args[2] = ctx->args[3];
 	ctx->args[3] = ctx->args[4];
 	return bsd_sys_wait4(ctx);
 }
@@ -482,6 +557,16 @@ const struct abi_sysent freebsd_sysent[] = {
 	S(getresgid)	= ABI_PASS("getresgid", 3, __NR_getresgid),
 	S(getgroups)	= ABI_PASS("getgroups", 2, __NR_getgroups),
 	S(setgroups)	= ABI_PASS("setgroups", 2, __NR_setgroups),
+	S(freebsd14_getgroups) = ABI_PASS("getgroups", 2, __NR_getgroups),
+	S(freebsd14_setgroups) = ABI_PASS("setgroups", 2, __NR_setgroups),
+	S(uuidgen)	= ABI_EMUL("uuidgen", 2, freebsd_sys_uuidgen),
+	S(kenv)		= ABI_EMUL("kenv", 4, freebsd_sys_kenv),
+	/* Capsicum: limits are accepted, capability mode is not available */
+	S(cap_enter)	= ABI_EMUL("cap_enter", 0, bsd_sys_nosys),
+	S(cap_getmode)	= ABI_EMUL("cap_getmode", 1, bsd_sys_nosys),
+	S(cap_rights_limit) = ABI_EMUL("cap_rights_limit", 2, bsd_sys_zero),
+	S(cap_ioctls_limit) = ABI_EMUL("cap_ioctls_limit", 3, bsd_sys_zero),
+	S(cap_fcntls_limit) = ABI_EMUL("cap_fcntls_limit", 2, bsd_sys_zero),
 	S(getlogin)	= ABI_EMUL("getlogin", 2, bsd_sys_getlogin),
 	S(issetugid)	= ABI_EMUL("issetugid", 0, bsd_sys_zero),
 	S(umask)	= ABI_PASS("umask", 1, __NR_umask),
@@ -574,6 +659,8 @@ const struct abi_sysent freebsd_sysent[] = {
 	S(pathconf)	= ABI_EMUL("pathconf", 2, freebsd_sys_pathconf),
 	S(lpathconf)	= ABI_EMUL("lpathconf", 2, freebsd_sys_pathconf),
 	S(fpathconf)	= ABI_EMUL("fpathconf", 2, freebsd_sys_pathconf),
+	S(__realpathat)	= ABI_EMUL("__realpathat", 5, freebsd_sys_realpathat),
+	S(copy_file_range) = ABI_EMUL("copy_file_range", 6, freebsd_sys_copy_file_range),
 	S(getdtablesize) = ABI_EMUL("getdtablesize", 0, bsd_sys_getdtablesize),
 	S(extattr_get_file) = ABI_EMUL("extattr_get_file", 5, freebsd_sys_eopnotsupp),
 	S(extattr_get_link) = ABI_EMUL("extattr_get_link", 5, freebsd_sys_eopnotsupp),

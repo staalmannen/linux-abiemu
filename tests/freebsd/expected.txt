@@ -1,0 +1,14 @@
+one two three
+first: [
+c2 e h
+/tmp/d/c2
+removed
+got USR1
+after-usr1
+got TERM
+after-term
+child done
+wait status 7
+killed status 143 (expect 143)
+heredoc 2
+== done

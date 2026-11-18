@@ -144,6 +144,8 @@ static const struct {
 	unsigned int	native;
 } bsd_ioctl_map[] = {
 	{ 0x40087468, TIOCGWINSZ },
+	{ 0x4004741a, TIOCGETD },
+	{ 0x8004741b, TIOCSETD },
 	{ 0x80087467, TIOCSWINSZ },
 	{ 0x40047477, TIOCGPGRP },
 	{ 0x80047476, TIOCSPGRP },
