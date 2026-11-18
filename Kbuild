@@ -4,3 +4,4 @@ obj-m += bsd/
 obj-m += freebsd/
 obj-m += netbsd/
 obj-m += openbsd/
+obj-m += illumos/

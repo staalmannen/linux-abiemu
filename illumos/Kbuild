@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0
+ccflags-y := -I$(src)/../include
+
+obj-m := abi_illumos.o
+abi_illumos-y := main.o sys.o signal.o
