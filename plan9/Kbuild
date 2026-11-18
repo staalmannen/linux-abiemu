@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0
+ccflags-y := -I$(src)/../include
+
+obj-m := abi_plan9.o
+abi_plan9-y := main.o sys.o dir.o note.o

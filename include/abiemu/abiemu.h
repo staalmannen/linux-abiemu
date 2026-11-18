@@ -69,6 +69,8 @@ enum abi_state {
 /* abi_ctx.flags */
 #define ABI_F_NORESULT	0x01	/* handler loaded the registers itself */
 #define ABI_F_NORESTART	0x02	/* never restart, always report EINTR */
+#define ABI_F_REDO	0x04	/* post: run the whole foreign call again */
+#define ABI_F_PERS	0x100	/* first bit free for personalities */
 
 #define ABI_MAXARGS	8
 
@@ -124,6 +126,8 @@ struct abi_personality {
 	int  (*probe_elf)(struct linux_binprm *bprm, const struct elfhdr *eh);
 	int  (*load_binary)(struct linux_binprm *bprm);
 	void (*exec_setup)(struct pt_regs *regs);
+	/* first return to user space of a new task (fork/rfork child) */
+	void (*fork_return)(struct pt_regs *regs);
 	/* signal delivery, see core/signal.c */
 	int  (*sig_deliver)(struct abi_ctx *ctx, int lsig,
 			    unsigned long handler, unsigned long lframe);

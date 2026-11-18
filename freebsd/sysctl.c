@@ -15,6 +15,9 @@
 #include <linux/slab.h>
 #include <linux/timekeeping.h>
 #include <linux/sched/mm.h>
+#include <linux/mmap_lock.h>
+#include <linux/file.h>
+#include <linux/dcache.h>
 
 #include "freebsd.h"
 
@@ -212,6 +215,34 @@ static long freebsd_sysctl_node(const struct freebsd_sysctl_node *node,
 	return ret;
 }
 
+static long freebsd_sysctl_exepath(void __user *old, size_t __user *oldlenp)
+{
+	struct mm_struct *mm = current->mm;
+	struct vm_area_struct *vma;
+	struct file *exe = NULL;
+	char *buf, *p;
+	long ret;
+
+	mmap_read_lock(mm);
+	vma = find_vma(mm, mm->start_code);
+	if (vma && vma->vm_file)
+		exe = get_file(vma->vm_file);
+	mmap_read_unlock(mm);
+	if (!exe)
+		return -ENOENT;
+	buf = kmalloc(PATH_MAX, GFP_KERNEL);
+	if (!buf) {
+		fput(exe);
+		return -ENOMEM;
+	}
+	p = d_path(&exe->f_path, buf, PATH_MAX);
+	fput(exe);
+	ret = IS_ERR(p) ? PTR_ERR(p) :
+		freebsd_sysctl_out(old, oldlenp, p, strlen(p) + 1);
+	kfree(buf);
+	return ret;
+}
+
 static char *freebsd_sysctl_getname(const char __user *uname, size_t len)
 {
 	char *name;
@@ -255,12 +286,18 @@ long freebsd_sys_sysctl(struct abi_ctx *ctx)
 					  sizeof(node->mib));
 	}
 
+	/* kern.proc.pathname.<pid>: only for the caller itself */
+	if (len == 4 && mib[0] == CTL_KERN && mib[1] == 14 && mib[2] == 12 &&
+	    (mib[3] == -1 || mib[3] == task_tgid_vnr(current)))
+		return freebsd_sysctl_exepath(old, oldlenp);
+
 	node = freebsd_sysctl_bymib(mib, len);
 	if (!node) {
 		if (abi_trace)
-			pr_info("abiemu: freebsd[%d:%s]: unknown sysctl mib %d.%d (len %u)\n",
+			pr_info("abiemu: freebsd[%d:%s]: unknown sysctl mib %d.%d.%d.%d (len %u)\n",
 				task_pid_nr(current), current->comm, mib[0],
-				len > 1 ? mib[1] : -1, len);
+				len > 1 ? mib[1] : -1, len > 2 ? mib[2] : -1,
+				len > 3 ? mib[3] : -1, len);
 		return -ENOENT;
 	}
 	return freebsd_sysctl_node(node, old, oldlenp, ctx->args[4] != 0);

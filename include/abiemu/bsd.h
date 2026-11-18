@@ -11,6 +11,7 @@
 #define _ABIEMU_BSD_H
 
 #include <abiemu/abiemu.h>
+#include <linux/uaccess.h>
 
 struct abi_flagmap {
 	unsigned int foreign;
@@ -55,6 +56,16 @@ static inline void abi_bsd_retval2(struct abi_ctx *ctx, unsigned long v)
 {
 	ctx->sv_dx = v;
 	ctx->regs->dx = v;
+}
+
+/* Argument @n (>= 6) of a call made from a C stub: it is on the stack. */
+static inline unsigned long abi_bsd_stackarg(struct abi_ctx *ctx, int n)
+{
+	unsigned long v = 0;
+
+	if (get_user(v, (unsigned long __user *)(ctx->regs->sp + 8 * (n - 5))))
+		v = 0;
+	return v;
 }
 
 /* signals */
@@ -113,6 +124,17 @@ long bsd_sys_setrlimit(struct abi_ctx *ctx);
 long abi_bsd_mmap(unsigned long addr, unsigned long len, int prot,
 		  unsigned long lflags, int fd, loff_t off,
 		  unsigned long align);
+
+/* sysctl (see bsd/sysctl.c) */
+#define ABI_SYSCTL_BUFSZ	256
+#define ABI_SYSCTL_MAXNAME	24
+typedef int (*abi_sysctl_fn)(const int *mib, unsigned int len, void *buf,
+			     size_t want);
+long abi_bsd_sysctl(struct abi_ctx *ctx, abi_sysctl_fn value);
+int abi_sysctl_str(void *buf, const char *s);
+int abi_sysctl_int(void *buf, int v);
+int abi_sysctl_quad(void *buf, u64 v);
+int abi_sysctl_random(void *buf, size_t want);
 
 /* directory entry encoders */
 size_t abi_bsd_emit_dirent_freebsd(void *buf, size_t room, const char *name,

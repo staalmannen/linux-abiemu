@@ -193,11 +193,20 @@ static int abi_load_binary(struct linux_binprm *bprm)
 		if (!elf && p->load_binary) {
 			struct mm_struct *mm = bprm->mm;
 
-			ret = p->load_binary(bprm);
+			ret = abi_enable();
+			if (!ret && !t)
+				t = abi_task_current(true);
+			if (!ret && !t)
+				ret = -ENOMEM;
 			if (!ret) {
-				abi_enable();
-				if (t)
+				/* the loader replaces the image; brand it like ELF */
+				t->exec_pers = p;
+				t->exec_bprm = bprm;
+				ret = p->load_binary(bprm);
+				if (!ret)
 					t->exec_mm = mm;
+				else
+					t->exec_pers = NULL;
 			}
 			if (ret != -ENOEXEC) {
 				module_put(p->owner);
