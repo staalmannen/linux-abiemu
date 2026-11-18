@@ -6,3 +6,4 @@ obj-m += netbsd/
 obj-m += openbsd/
 obj-m += illumos/
 obj-m += plan9/
+obj-m += p9net/

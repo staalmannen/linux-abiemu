@@ -38,6 +38,7 @@ p9sys:
 	ret
 
 /* note handler: RARG = ureg, 8(SP) = ureg, 16(SP) = note */
+	.weak notehandler
 	.globl notetramp
 notetramp:
 	movq	8(%rsp), %rdi

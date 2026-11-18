@@ -26,6 +26,6 @@ run-%:
 # Plan 9 a.out programs built with gcc + elf2aout.py
 run-plan9:
 	@$(MAKE) -s -C plan9
-	@./run-qemu.sh plan9/guest.sh plan9/p9test | grep -a -E '^(RESULT|not ok)'
+	@./run-qemu.sh plan9/guest.sh plan9/p9test plan9/p9net | grep -a -E '^(RESULT|not ok)'
 
 .PHONY: run run-rawsys run-plan9

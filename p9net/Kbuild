@@ -1,0 +1,3 @@
+# SPDX-License-Identifier: GPL-2.0
+obj-m := abi_p9net.o
+abi_p9net-y := p9net.o

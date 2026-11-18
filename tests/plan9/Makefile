@@ -7,13 +7,17 @@ CFLAGS = -O1 -ffreestanding -fno-stack-protector -fno-pie -fno-builtin \
 LDFLAGS = -nostdlib -static -no-pie -Wl,--build-id=none \
 	  -Wl,-T,../../scripts/plan9-aout.ld
 
-PROGS = p9test
+PROGS = p9test p9net
 all: $(PROGS)
 
-p9test.elf: p9test.c sys.S
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ p9test.c sys.S
+%.elf: %.c sys.S p9lib.h
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $*.c sys.S
 
 p9test: p9test.elf
+	python3 ../../scripts/elf2aout.py $< $@
+	chmod +x $@
+
+p9net: p9net.elf
 	python3 ../../scripts/elf2aout.py $< $@
 	chmod +x $@
 
