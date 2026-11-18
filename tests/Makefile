@@ -10,7 +10,12 @@ export KVER
 
 SUITES = freebsd netbsd
 
-run: $(SUITES:%=run-%)
+run: run-rawsys $(SUITES:%=run-%)
+
+# Freestanding raw system call programs, one per OS; no roots needed.
+run-rawsys:
+	@$(MAKE) -s -C rawsys
+	@./run-qemu.sh rawsys/guest.sh rawsys/rawsys-* | grep -a -E '^(RESULT|not ok)'
 
 run-%:
 	@if [ -d roots/$*/bin ]; then \
@@ -18,4 +23,4 @@ run-%:
 			workload.sh expected.txt | grep -a -E '^(RESULT|MISSING|\[)'; \
 	else echo "RESULT $*: SKIP (no roots/$*)"; fi
 
-.PHONY: run
+.PHONY: run run-rawsys

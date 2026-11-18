@@ -293,13 +293,15 @@ static long netbsd_sys_mmap(struct abi_ctx *ctx)
 	unsigned int shift = flags >> NETBSD_MAP_ALIGN_SHIFT;
 	int prot = ctx->args[2] & (PROT_READ | PROT_WRITE | PROT_EXEC);
 	unsigned long lflags = 0, align = 0;
-	loff_t pos = abi_bsd_stackarg(ctx, 6);
+	loff_t pos = 0;
 
 	lflags |= (flags & BSD_MAP_SHARED) ? MAP_SHARED : MAP_PRIVATE;
 	if (flags & BSD_MAP_FIXED)
 		lflags |= MAP_FIXED;
 	if (flags & (BSD_MAP_ANON | NETBSD_MAP_STACK))
 		lflags |= MAP_ANONYMOUS;
+	else
+		pos = abi_bsd_stackarg(ctx, 6);	/* only read when needed */
 	if (shift >= PAGE_SHIFT && shift < 40)
 		align = 1UL << shift;
 	return abi_bsd_mmap(ctx->args[0], ctx->args[1], prot, lflags,

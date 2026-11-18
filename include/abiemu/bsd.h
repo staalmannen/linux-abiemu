@@ -125,6 +125,17 @@ long abi_bsd_mmap(unsigned long addr, unsigned long len, int prot,
 		  unsigned long lflags, int fd, loff_t off,
 		  unsigned long align);
 
+/* sysctl (see bsd/sysctl.c) */
+#define ABI_SYSCTL_BUFSZ	256
+#define ABI_SYSCTL_MAXNAME	24
+typedef int (*abi_sysctl_fn)(const int *mib, unsigned int len, void *buf,
+			     size_t want);
+long abi_bsd_sysctl(struct abi_ctx *ctx, abi_sysctl_fn value);
+int abi_sysctl_str(void *buf, const char *s);
+int abi_sysctl_int(void *buf, int v);
+int abi_sysctl_quad(void *buf, u64 v);
+int abi_sysctl_random(void *buf, size_t want);
+
 /* directory entry encoders */
 size_t abi_bsd_emit_dirent_freebsd(void *buf, size_t room, const char *name,
 				   int namlen, u64 ino, unsigned int type,

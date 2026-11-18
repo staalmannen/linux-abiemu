@@ -3,3 +3,4 @@ obj-m += core/
 obj-m += bsd/
 obj-m += freebsd/
 obj-m += netbsd/
+obj-m += openbsd/
