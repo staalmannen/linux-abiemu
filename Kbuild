@@ -5,3 +5,4 @@ obj-m += freebsd/
 obj-m += netbsd/
 obj-m += openbsd/
 obj-m += illumos/
+obj-m += plan9/

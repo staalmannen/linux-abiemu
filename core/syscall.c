@@ -250,8 +250,19 @@ void abi_sys_exit(void *data, struct pt_regs *regs, long ret)
 	if (likely(!abi_per_foreign(per)))
 		return;
 	t = abi_task_current(false);
-	if (!t)
+	if (!t) {
+		/* a new task returning from fork()/clone() for the first time */
+		rcu_read_lock();
+		p = rcu_dereference(abi_pers[per]);
+		if (p && p->fork_return && try_module_get(p->owner)) {
+			rcu_read_unlock();
+			p->fork_return(regs);
+			module_put(p->owner);
+		} else {
+			rcu_read_unlock();
+		}
 		return;
+	}
 	ctx = &t->ctx;
 
 	if (t->exec_mm) {
@@ -304,6 +315,14 @@ void abi_sys_exit(void *data, struct pt_regs *regs, long ret)
 
 	if (ctx->post)
 		ret = ctx->post(ctx, ret);
+	if (ctx->flags & ABI_F_REDO) {
+		/* the handler has more native work to do: enter it again */
+		ctx->state = ABI_ST_IDLE;
+		regs->ax = ctx->sv_nr;
+		regs->orig_ax = -1;
+		regs->ip -= 2;
+		return;
+	}
 	abi_finish(ctx, ret, " (native)");
 }
 

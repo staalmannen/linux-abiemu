@@ -10,7 +10,7 @@ export KVER
 
 SUITES = freebsd netbsd
 
-run: run-rawsys $(SUITES:%=run-%)
+run: run-rawsys run-plan9 $(SUITES:%=run-%)
 
 # Freestanding raw system call programs, one per OS; no roots needed.
 run-rawsys:
@@ -23,4 +23,9 @@ run-%:
 			workload.sh expected.txt | grep -a -E '^(RESULT|MISSING|\[)'; \
 	else echo "RESULT $*: SKIP (no roots/$*)"; fi
 
-.PHONY: run run-rawsys
+# Plan 9 a.out programs built with gcc + elf2aout.py
+run-plan9:
+	@$(MAKE) -s -C plan9
+	@./run-qemu.sh plan9/guest.sh plan9/p9test | grep -a -E '^(RESULT|not ok)'
+
+.PHONY: run run-rawsys run-plan9
