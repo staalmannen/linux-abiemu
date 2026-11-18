@@ -11,6 +11,7 @@
 #define _ABIEMU_BSD_H
 
 #include <abiemu/abiemu.h>
+#include <linux/uaccess.h>
 
 struct abi_flagmap {
 	unsigned int foreign;
@@ -55,6 +56,16 @@ static inline void abi_bsd_retval2(struct abi_ctx *ctx, unsigned long v)
 {
 	ctx->sv_dx = v;
 	ctx->regs->dx = v;
+}
+
+/* Argument @n (>= 6) of a call made from a C stub: it is on the stack. */
+static inline unsigned long abi_bsd_stackarg(struct abi_ctx *ctx, int n)
+{
+	unsigned long v = 0;
+
+	if (get_user(v, (unsigned long __user *)(ctx->regs->sp + 8 * (n - 5))))
+		v = 0;
+	return v;
 }
 
 /* signals */

@@ -2,8 +2,11 @@
 # SPDX-License-Identifier: GPL-2.0
 """Download an OCI image from Docker Hub and unpack it as a root tree.
 
-usage: fetch-oci-rootfs.py <repo> <tag> <arch> <outdir>
+usage: fetch-oci-rootfs.py [--layer-min BYTES] <repo> <tag> <arch> <outdir>
 e.g.   fetch-oci-rootfs.py freebsd/freebsd-runtime 14.3 amd64 roots/freebsd
+
+--layer-min only unpacks layers of at least that size (handy for images
+that wrap a foreign root tree inside a Linux image).
 
 The FreeBSD project publishes its base system as OCI images, which is
 the easiest way to get a FreeBSD userland onto a Linux box.  Only the
@@ -32,7 +35,12 @@ def get(url, headers, raw=False):
 
 
 def main():
-    repo, tag, arch, out = sys.argv[1:5]
+    args = sys.argv[1:]
+    layer_min = 0
+    if args[0] == "--layer-min":
+        layer_min = int(args[1])
+        args = args[2:]
+    repo, tag, arch, out = args[:4]
     tok = get("https://auth.docker.io/token?service=registry.docker.io"
               "&scope=repository:%s:pull" % repo, {})["token"]
     auth = {"Authorization": "Bearer " + tok}
@@ -44,6 +52,8 @@ def main():
         m = get("%s/manifests/%s" % (reg, d), dict(auth, Accept=ACCEPT))
     os.makedirs(out, exist_ok=True)
     for layer in m["layers"]:
+        if layer["size"] < layer_min:
+            continue
         print("layer %s (%d bytes)" % (layer["digest"][:19], layer["size"]))
         blob = get("%s/blobs/%s" % (reg, layer["digest"]), auth, raw=True)
         with tempfile.NamedTemporaryFile() as f:

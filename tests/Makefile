@@ -1,19 +1,21 @@
 # SPDX-License-Identifier: GPL-2.0
 #
-# make -C tests run KVER=<kernel>      run every suite whose root exists
+# make -C tests run KVER=<kernel>
 #
-# Suites:
-#   freebsd  needs a FreeBSD base in tests/roots/freebsd:
-#            ../scripts/fetch-oci-rootfs.py freebsd/freebsd-runtime 14.3 amd64 roots/freebsd
-#   rawsys   self contained raw system call programs (NetBSD, OpenBSD,
-#            illumos, Plan 9), built here
+# Boots the kernel in QEMU once per suite and runs workload.sh inside a
+# chroot of the foreign system.  A suite is skipped when its root tree
+# is missing.  Fetch the roots with ../scripts/fetch-roots.sh.
 KVER ?= $(shell uname -r)
 export KVER
 
-run:
-	@if [ -d roots/freebsd/bin ]; then \
-		./run-qemu.sh -r freebsd=roots/freebsd freebsd/guest.sh \
-			freebsd/workload.sh freebsd/expected.txt | grep -a -A200 '=== guest'; \
-	else echo "skipping freebsd suite: no roots/freebsd"; fi
+SUITES = freebsd netbsd
 
-.PHONY: run rawsys
+run: $(SUITES:%=run-%)
+
+run-%:
+	@if [ -d roots/$*/bin ]; then \
+		./run-qemu.sh -r $*=roots/$* $*/guest.sh guest-common.sh \
+			workload.sh expected.txt | grep -a -E '^(RESULT|MISSING|\[)'; \
+	else echo "RESULT $*: SKIP (no roots/$*)"; fi
+
+.PHONY: run

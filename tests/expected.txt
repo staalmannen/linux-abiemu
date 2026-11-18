@@ -1,7 +1,7 @@
 one two three
 first: [
 c2 e h
-/tmp/d/c2
+/tmp/d
 removed
 got USR1
 after-usr1

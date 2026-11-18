@@ -2,9 +2,9 @@ echo "== pipes and redirects"
 echo one two three | cat | cat > /tmp/a.txt; cat /tmp/a.txt
 ls /bin | cat | { read x; echo "first: $x"; }
 echo "== files"
-mkdir -p /tmp/d/e && cp /COPYRIGHT /tmp/d/c && ln -s c /tmp/d/l && ln /tmp/d/c /tmp/d/h && ls -l /tmp/d
-chmod 600 /tmp/d/c; mv /tmp/d/c /tmp/d/c2; rm /tmp/d/l; echo $(ls /tmp/d); realpath /tmp/d/../d/c2
-dd if=/COPYRIGHT of=/tmp/dd.out bs=512 count=2 2>&1; ls -l /tmp/dd.out
+seq_file=/etc/passwd; mkdir -p /tmp/d/e && cp $seq_file /tmp/d/c && ln -s c /tmp/d/l && ln /tmp/d/c /tmp/d/h && ls -l /tmp/d
+chmod 600 /tmp/d/c; mv /tmp/d/c /tmp/d/c2; rm /tmp/d/l; echo $(ls /tmp/d); cd /tmp/d/../d && pwd -P; cd /
+dd if=/etc/passwd of=/tmp/dd.out bs=512 count=2 2>&1; ls -l /tmp/dd.out
 rm -r /tmp/d; test -e /tmp/d || echo "removed"
 echo "== traps"
 trap 'echo got USR1' USR1; kill -USR1 $$; echo after-usr1
